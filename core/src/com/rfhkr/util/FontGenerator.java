@@ -1,11 +1,11 @@
 package com.rfhkr.util;
 
-import  java.util.*;
-import  java.lang.*;
-import  com.badlogic.gdx.*;
-import  com.badlogic.gdx.graphics.g2d.*;
-import  com.badlogic.gdx.graphics.g2d.freetype.*;
-import  com.sun.istack.internal.NotNull;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.g2d.freetype.*;
+import com.sun.istack.internal.*;
+
+import java.util.*;
 
 /**
  * @author Rei_Fan49
@@ -21,7 +21,7 @@ public final class FontGenerator {
 	@SafeVarargs
 	public static BitmapFont[] createFonts(PathResolver file,String chars,@NotNull Integer... sizeLists) {
 		FreeTypeFontGenerator
-				fontGen    = new FreeTypeFontGenerator(Gdx.files.internal(file.toString()));
+				fontGen    = new FreeTypeFontGenerator(Gdx.files.internal(file.build("core","assets").resolve()));
 		FreeTypeFontGenerator.FreeTypeFontParameter
 				fontParam  = new FreeTypeFontGenerator.FreeTypeFontParameter();
 		Map<Integer,BitmapFont> fontResult = new TreeMap<>((a,b)->Integer.compare(a,b));

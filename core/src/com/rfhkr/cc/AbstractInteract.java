@@ -2,9 +2,8 @@ package com.rfhkr.cc;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
-import com.sun.istack.internal.Nullable;
 import com.rfhkr.cc.mainmenu.*;
+import com.sun.istack.internal.*;
 
 /**
  * @author Rei_Fan49
@@ -16,6 +15,7 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 	/** determines how much far a single frame read for a hold to be treated as drag instead */
 	protected static float   Drag_threshold = 0.0f;
 	protected static Vector2 input = new Vector2();
+	protected static CCMain  gRef;
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
@@ -106,9 +106,10 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 	public abstract void onHoverLost(float dx,float dy);
 	// <<END>> Instance Structure
 	// Constructors
-	public AbstractInteract(C sensor) { this(new Vector2(),sensor); }
-	public AbstractInteract(float x,float y,C sensor) { this(new Vector2(x,y),sensor); }
-	public AbstractInteract(Vector2 v,C sensor) {
+	public AbstractInteract(CCMain gRef,C sensor) { this(gRef,new Vector2(),sensor); }
+	public AbstractInteract(CCMain gRef,float x,float y,C sensor) { this(gRef,new Vector2(x,y),sensor); }
+	public AbstractInteract(CCMain gRef,Vector2 v,C sensor) {
+		AbstractInteract.gRef = gRef;
 		pos = v;
 		touchGeo = sensor;
 	}

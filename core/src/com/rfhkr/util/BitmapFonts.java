@@ -1,11 +1,12 @@
 package com.rfhkr.util;
-import  java.util.*;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.*;
-import  com.badlogic.gdx.graphics.g2d.*;
-import  com.badlogic.gdx.graphics.g2d.freetype.*;
-import  com.sun.istack.internal.NotNull;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.g2d.freetype.*;
+import com.sun.istack.internal.*;
+
+import java.util.*;
 
 /**
  * @author Rei_Fan49
@@ -16,7 +17,7 @@ public class BitmapFonts {
 	private static final int defaultIndex = 0;
 	private static BitmapFont defaultFont;
 	private static BitmapFont getDefaultFont() {
-		return Objects.isNull(defaultFont) ? (defaultFont = new BitmapFont()) : defaultFont;
+		return Objects.isNull(defaultFont) ? (defaultFont = new BitmapFont(true)) : defaultFont;
 	}
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES

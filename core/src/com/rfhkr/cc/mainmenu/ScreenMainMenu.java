@@ -1,15 +1,10 @@
 package com.rfhkr.cc.mainmenu;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.*;
-import com.rfhkr.cc.level.*;
-import com.rfhkr.util.*;
-import java.util.*;
-import java.util.stream.*;
 
 /**
  * @author Rei_Fan49
@@ -73,7 +68,7 @@ public class ScreenMainMenu extends AbstractScreen {
 	// Constructors
 	public ScreenMainMenu(final CCMain gRef,Class<? extends InputProcessor> inputClass) {
 		super(gRef,inputClass);
-		obj.add(new MainMenuInteractObjTest<>(200,200,new Rectangle(0,0,32,32)));
+		obj.add(new MainMenuInteractObjTest<>(gRef,200,200,new Rectangle(0,0,32,32)));
 	}
 	// Driver
 }

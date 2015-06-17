@@ -1,5 +1,7 @@
 package com.rfhkr.cc.gameplay;
 
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.util.*;
@@ -11,12 +13,13 @@ import java.util.*;
  * @author Rei_Fan49
  * @since 2015/06/08
  */
-public abstract class NoteBasic extends AbstractInteract<Circle> {
+public abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	private Circle baseSensor;
+	private static Circle baseSensor;
+	private static final String textureFN = "noteBase.png";
 	// ** ACCESSORS
-	private final Circle getBasicSensor() {
+	private static final Circle getBasicSensor() {
 		return Objects.isNull(baseSensor) ? (baseSensor = new Circle(0, 0, 1)) : baseSensor;
 	}
 	// ** PREDICATES
@@ -25,11 +28,13 @@ public abstract class NoteBasic extends AbstractInteract<Circle> {
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
+	private Texture noteSprite;
 	private byte  slot;
 	private float time_s;
 	private float time_e;
 	private byte  amp;
 	// ** ACCESSORS
+	public byte getNotePos() { return slot; }
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
@@ -50,6 +55,7 @@ public abstract class NoteBasic extends AbstractInteract<Circle> {
 		this.time_s = s;
 		this.time_e = e;
 		this.amp = (byte)Math.max(Math.min(n, Byte.MAX_VALUE), 1);
+		this.noteSprite = new Texture(Gdx.files.internal(PathResolver.at(textureFN).resolve()));
 	}
 	// Driver
 }

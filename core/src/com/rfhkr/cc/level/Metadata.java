@@ -1,6 +1,7 @@
 package com.rfhkr.cc.level;
 
 import com.rfhkr.util.*;
+import com.sun.istack.internal.*;
 
 import java.util.*;
 
@@ -45,15 +46,18 @@ public final class Metadata {
 	 * ****** ALWAYS PICK THE TOPMOST/EARLIEST ****
 	 * **** Touhou case ->
 	 * ****** sort from earliest touhou, and then sort from earliest encounter (1,boss,2,boss,...,ex,boss)
+	 * ****** EXAMPLE: koishi - hartmann, sanae - last remote, kogasa - night sky ufo, etc.
 	 * **** Kancolle/Anime Standard case ->
-	 * ****** sort from earliest song that appears on earliest episode
+	 * ****** sort from earliest encounter of the arrangement
 	 */
 	private Twin<String> origin;
-	private float firstOffset;
-	private Map<Timing,BPMData> timingPoints;
+	private Timingset timingPoints;
 	// ** ACCESSORS
-	private String  getPairResult(Pair<String,String> p) {
-		return p.getElemCond("",(a,b)->(unicode&&Objects.nonNull(p.get2nd())),null);
+	private boolean  unicodable(Pair<String,String> p) {
+		return unicode&&Objects.nonNull(p.get2nd());
+	}
+	private String   getPairResult(Pair<String,String> p) {
+		return p.getElemCond("",(a,b)->(unicodable(p)),null);
 	}
 	public String getTitle() {
 		return getPairResult(songName);
@@ -76,10 +80,38 @@ public final class Metadata {
 	public String getBaseArrangement() {
 		return Objects.requireNonNull(origin).get2nd();
 	}
-	public float  getOffset() { return firstOffset; }
+	public Timingset getTimingSet() { return timingPoints; }
+	public float  getOffset() { return timingPoints.getFirstOffset(); }
 	public Map<Timing,BPMData> getTimingPoint() {
-		return Objects.requireNonNull(timingPoints);
+		return timingPoints.getTimingTable();
 	}
+	private Metadata setPairElement(Pair<String,String> p,String e1) { p.set1st(e1); return this;	}
+	private Metadata setPairElement(Pair<String,String> p,@Nullable String e1,@Nullable String e2) {
+		if (Objects.nonNull(e1)) p.set1st(e1); p.set2nd(e2); return this;
+	}
+	public Metadata setTitle(String title) { return setPairElement(songName,title); }
+	public Metadata setTitle(@Nullable String title,@Nullable String unicode) {
+		return setPairElement(songName,title,unicode);
+	}
+	public Metadata setVocalist(String vocal) { return setPairElement(vocalist,vocal); }
+	public Metadata setVocalist(@Nullable String vocal,@Nullable String unicode) {
+		return setPairElement(vocalist,vocal,unicode);
+	}
+	public Metadata setComposer(String cmp) { return setPairElement(composer,cmp); }
+	public Metadata setComposer(@Nullable String cmp,@Nullable String unicode) {
+		return setPairElement(composer,cmp,unicode);
+	}
+	public Metadata setGroup(String circle) { return setPairElement(group,circle); }
+	public Metadata setGroup(@Nullable String circle,@Nullable String unicode) {
+		return setPairElement(group,circle,unicode);
+	}
+	public Metadata setSeries(String origin) { return setPairElement(series,origin); }
+	public Metadata setSeries(@Nullable String origin,@Nullable String unicode) {
+		return setPairElement(series,origin,unicode);
+	}
+	public Metadata setTimingSet(Timingset t) { timingPoints=t; return this; }
+	public Metadata setDesignatedCharacter(String chara) { origin.set1st(chara); return this; }
+	public Metadata setBaseArrangement(String baseArr) { origin.set2nd(baseArr); return this; }
 	// ** PREDICATES
 	public boolean isInstrumental() {
 		return Objects.isNull(vocalist);
@@ -90,9 +122,49 @@ public final class Metadata {
 	public boolean isArrangement() {
 		return Objects.nonNull(Objects.requireNonNull(origin).get2nd());
 	}
+	public boolean equals(Object other) {
+		return (other != null) && (other instanceof Metadata) && equals((Metadata) other);
+	}
+	public boolean equals(@NotNull Metadata other) {
+		return (
+			this.songName.equals(other.songName) &&
+			this.vocalist.equals(other.vocalist) &&
+			this.composer.equals(other.composer) &&
+			this.group.equals(other.group) &&
+			this.series.equals(other.series) &&
+			this.origin.equals(other.origin) &&
+			this.timingPoints.equals(other.timingPoints)
+		);
+	}
 	// ** INTERACTIONS
 	// ** METHODS
+	public String toString() {
+		return String.format(
+			"Metadata@%s==>%n" +
+				"\tTitle\t%s%s%n" +
+				"\tVocal\t%s%s%n" +
+				"\tComposer\t%s%s%n" +
+				"\tGroup\t%s%s%n" +
+				"\tSeries\t%s%s%n" +
+				"\tOrigin\t%s from %s%n", Integer.toHexString(this.hashCode()),
+			this.songName.get1st(), unicodable(this.songName) ? " (" + this.songName.get2nd() + ")" : "",
+			this.vocalist.get1st(), unicodable(this.vocalist) ? " (" + this.vocalist.get2nd() + ")" : "",
+			this.composer.get1st(), unicodable(this.composer) ? " (" + this.composer.get2nd() + ")" : "",
+			this.group.get1st(), unicodable(this.group) ? " (" + this.group.get2nd() + ")" : "",
+			this.series.get1st(), unicodable(this.series) ? " (" + this.series.get2nd() + ")" : "",
+			this.origin.get1st(), this.origin.get2nd()
+		);
+	}
 	// <<END>> Instance Structure
 	// Constructors
+	{
+		songName = Twin.set("",null);
+		vocalist = Twin.set("",null);
+		composer = Twin.set("",null);
+		group    = Twin.set("",null);
+		series   = Twin.set("",null);
+		origin   = Twin.set(null,null);
+		timingPoints = new Timingset();
+	}
 	// Driver
 }

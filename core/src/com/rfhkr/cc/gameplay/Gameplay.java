@@ -4,10 +4,12 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.errors.*;
+import com.rfhkr.cc.io.*;
 import com.rfhkr.cc.level.*;
-import com.rfhkr.cc.level.Chart.NoteType;
+import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.util.*;
 
 import java.util.*;
@@ -21,8 +23,13 @@ public class Gameplay extends AbstractScreen {
 	// ** PROPERTIES
 	private static Gameplay self;
 	private static Vector2 lastCachedSize = new Vector2();
+	private static final boolean testMode = true;
 	public static final Setup setup = new Setup();
+	public static final Map<Integer,Array<Vector2>> posMap = new TreeMap<>();
 	// ** ACCESSORS
+	/** retrieves the current gameplay object
+	 * @return last assigned object
+	 */
 	public static Gameplay now() {
 		Objects.requireNonNull(self, "Cannot retrieve null reference for singleton-ish class");
 		return self;
@@ -37,10 +44,34 @@ public class Gameplay extends AbstractScreen {
 		Twin<Integer> s = now().gRef.getSize();
 		return lastCachedSize.set(s.getFirst(),s.getSecond());
 	}
+	public static Array<Vector2> assignPosition(int mode) {
+		if(!posMap.containsKey(mode)) {
+			Array<Vector2> mapping = new Array<>(mode);
+			final double
+				angleStart = 450,
+				angleIncr  = 360.0/mode,
+				angleCue = angleStart - angleIncr/2,
+				radius = 240;
+			final Vector2
+				center = new Vector2(getCenterScreen());
+			double angle;
+			int keyIndex = 0;
+			while(keyIndex < mode)
+				mapping.add(
+					(new Vector2(center))
+						.add(
+							(float)( radius * Math.cos(angle = Math.toRadians(angleCue - angleIncr * keyIndex++))),
+							(float)(-radius * Math.sin(angle))
+						)
+				);
+			posMap.put(mode,mapping);
+		}
+		return posMap.get(mode);
+	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
-	private short    combo;
+	private int      combo;
 	private Chartset selectedSet;
 	private byte     chartIndex;
 	private Map<NoteType,Integer> score;
@@ -99,6 +130,19 @@ public class Gameplay extends AbstractScreen {
 	public void processStepDraw(float delta,SpriteBatch batch) {
 		batch.begin();
 
+		gRef.font.getDefault().draw(batch,
+			String.format("%s - %s",getMetadata().getComposer(),getMetadata().getTitle()),
+			32, 32
+		);
+		gRef.font.getDefault().draw(batch,
+			String.format("(%s %02d) <%02d> by %s",
+				selectedSet.getDifficulties(chartIndex).getDiffName(),
+				selectedSet.getDifficulties(chartIndex).getDiffLevel(),
+				selectedSet.getDifficulties(chartIndex).getMode(),
+				selectedSet.getDifficulties(chartIndex).getDiffCharter()
+			),
+			32, 48
+		);
 		//gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
 		for(AbstractInteract o : obj)
 			o.draw();
@@ -117,6 +161,15 @@ public class Gameplay extends AbstractScreen {
 	public Gameplay(final CCMain gRef, Class<? extends InputProcessor> inputClass) {
 		super(gRef,inputClass);
 		now(this);
+		if(testMode) {
+			OsuFileReader.main();
+			selectedSet = Chartset.cache.iterator().next();
+			chartIndex  = 0;
+		}
+		assignPosition(selectedSet.getDifficulties(chartIndex).getMode());
+		combo = 0;
+		score = new TreeMap<>();
+		judge = new TreeMap<>();
 	}
 	// Driver
 }

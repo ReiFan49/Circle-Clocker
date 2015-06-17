@@ -1,9 +1,11 @@
 package com.rfhkr.util;
 
+import com.rfhkr.cc.errors.*;
+import com.sun.istack.internal.*;
+
 import java.io.*;
-import java.nio.*;
 import java.util.*;
-import java.util.function.*;
+import java.util.stream.*;
 
 /**
  * @author Rei_Fan49
@@ -24,21 +26,6 @@ public final class FileMarshal {
 	public static FileMarshal saveToFile  (String fn) throws Exception {
 		return new FileMarshal(FileMode.FILE_SAVE,fn);
 	}
-	/*
-		try {
-			Arrays.stream(objs).peek(o-> {
-				try {
-				objr.writeObject(o.getClass().cast(o));
-				} catch (Exception e) {
-					System.err.println(e);
-				} finally {
-				}
-			});
-			objr.close();
-		} catch (Exception e) {
-			System.err.println(e);
-		} finally {
-		} */
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
@@ -95,7 +82,48 @@ public final class FileMarshal {
 		}
 		return this;
 	}
+	public void close() {
+		try {
+			objr.get1st().close();
+			objr.get2nd().close();
+		} catch (Exception e) {
+			System.err.printf("%s: %s%n",e,e.getMessage());
+		}
+	}
+	public <T> FileMarshal dump(T obj) {
+		try {
+			if(fileMode!=FileMode.FILE_SAVE) throw ReiException.invoke("File mode invalid");
+			objr.get2nd().write(new byte[]{VERSION_MAJOR,VERSION_MINOR});
+			objr.get2nd().writeObject(obj);
+		} catch (Exception e) { System.err.println(e); }
+		return this;
+	}
+	public FileMarshal dump(@NotNull Object... objs) {
+		Arrays.stream(objs).forEach(obj->
+			dump(obj.getClass().cast(obj))
+		);
+		return this;
+	}
+	public <T> T load() {
+		try {
+			if (fileMode != FileMode.FILE_LOAD)
+				throw ReiException.invoke("File mode invalid");
+			byte[] v_ary = new byte[2];
+			if(objr.get1st().read(v_ary)<2)
+				throw ReiException.invoke("Version buffer check is less than 2 bytes");
+			if(!((v_ary[0]==VERSION_MAJOR)&&(v_ary[1]==VERSION_MINOR)))
+				throw ReiException.invoke("Stream version mismatch (file:"+
+				  Stream.of(v_ary).map(b->b.toString()).collect(Collectors.joining(",")) +
+					")->(this:"+
+					Stream.of(VERSION_MAJOR,VERSION_MINOR).map(b->b.toString()).collect(Collectors.joining(","))+")");
+			T obj = (T)objr.get1st().readObject();
+			return obj;
+		} catch (Exception e) {System.err.println(e); }
+		return null;
+	}
 	// <<END>> Instance Structure
+	// Nested Classes
+	private enum FileMode { FILE_NONE, FILE_SAVE, FILE_LOAD }
 	// Constructors
 	private FileMarshal(FileMode fm,String fn) throws Exception {
 		fstr = Pair.gen(new FileInputStream(fn),new FileOutputStream(fn));
@@ -107,10 +135,8 @@ public final class FileMarshal {
 				fileMode = fm;
 				break;
 			default:
-				throw new Exception("Unsupported Marshalling mode!");
+				throw new RuntimeException("Unsupported Marshalling mode!");
 		}
 	}
-	// Nested Classes
-	private enum FileMode { FILE_NONE, FILE_SAVE, FILE_LOAD }
 	// Driver
 }

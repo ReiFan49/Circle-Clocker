@@ -1,14 +1,16 @@
 package com.rfhkr.cc.level;
 
 import com.rfhkr.util.*;
+import com.sun.istack.internal.*;
 
 import java.util.*;
+import java.util.function.*;
 
 /**
  * @author Rei_Fan49
  * @since 2015/06/05
  */
-public class Timing {
+public class Timing implements Comparable<Timing>{
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	private static final Map<Pair<Short,Twin<Byte>>,Timing> cache = new TreeMap<>((a,b)-> {
@@ -23,43 +25,34 @@ public class Timing {
 	}
 	// ** PREDICATES
 	// ** INTERACTIONS
+	public static int compare(Timing t1,Timing t2) { return t1.compareTo(t2); }
 	// ** METHODS
-	public static Timing at(int beat) throws Exception {
+	public static Timing at(int beat) {
 		return at(beat,0,1);
 	}
-	public static Timing at(int beat,int dividend,int divisor) throws Exception {
+	public static Timing at(int beat,int dividend,int divisor) {
 		return at((short)beat,(byte)dividend,(byte)divisor);
 	}
-	public static Timing at(short beat,byte dividend,byte divisor) throws Exception {
+	public static Timing at(short beat,byte dividend,byte divisor) {
 		// Assertion Check
 		if(dividend< 0)
-			throw new Exception("dividend is either zero or a positive integer");
+			throw new ArithmeticException("dividend is either zero or a positive integer ");
 		if(divisor <=0)
-			throw new Exception("divisor must be a positive integer");
-		if(dividend>=divisor)
-			throw new Exception("dividend must less than divisor");
+			throw new ArithmeticException("divisor must be a positive integer");
+		if(dividend>divisor)
+			throw new ArithmeticException(String.format("dividend must less than divisor (%d/%d)",dividend,divisor));
+		else if (dividend==divisor)
+			return at(beat+1,0,1);
 		byte ld = divisor;
 		while(ld>=4) {
 			if((ld&1)==1)
-				throw new Exception("divisor ("+divisor+") must be power amplification of 2 or 3, or 1.");
+				throw new ArithmeticException("divisor ("+divisor+") must be power amplification of 2 or 3, or 1.");
 			else
 				ld>>=1;
 		}
 		// Perform Binary GCD
-		byte dv=dividend,dd=divisor,g=0,b  = 0;
-		if(dv>0) {
-			while ((dv | dd) % 2 == 0) {
-				dv >>= 1;
-				dd >>= 1;
-				b++;
-			}
-			while (dv != dd) {
-				if (dv% 2 == 0) dv >>= 1;
-				else if (dd % 2 == 0) dd >>= 1;
-				else if (dv > dd) dv = (byte) ((dv-dd) >> 1);
-				else dd = (byte) ((dd-dv) >> 1);
-			}
-			g = (byte)(dv << b);
+		if(dividend>0) {
+			byte g = (byte)MathSim.gcd(dividend,divisor);
 			dividend /= g;
 			divisor  /= g;
 		} else {
@@ -77,6 +70,62 @@ public class Timing {
 		}
 		return t;
 	}
+	public static Timing interval(Timing t1,Timing t2) {
+		Twin<Integer> tf1 = t1.getRational();
+		Twin<Integer> tf2 = t2.getRational();
+		Twin<Integer> tr  = MathSim.fractionSub(tf1.get1st(),tf1.get2nd(), tf2.get1st(),tf2.get2nd());
+		//try {
+			return Timing.at(tr.get1st() / tr.get2nd(), tr.get1st() % tr.get2nd(), tr.get2nd());
+		//} catch(Exception e) { System.err.printf("Bad fraction %s - %s => %s%n", t1, t2, e); return null; }
+	}
+	public static Timing shift(Timing t1,Timing t2) {
+		Twin<Integer> tf1 = t1.getRational();
+		Twin<Integer> tf2 = t2.getRational();
+		Twin<Integer> tr  = MathSim.fractionAdd(tf1.get1st(), tf1.get2nd(), tf2.get1st(), tf2.get2nd());
+		//try {
+			return Timing.at(tr.get1st() / tr.get2nd(), tr.get1st() % tr.get2nd(), tr.get2nd());
+		//} catch(Exception e) { System.err.printf("Bad fraction %s + %s => %s%n", t1, t2, e); return null; }
+	}
+	public static Timing valueOf(double realNum) {
+		/** Check Precision **/
+		double rn = realNum;
+		short b = 0; byte dv = 0, dd = 1;
+		final double EPSILON = 1.0e-3;
+		boolean harshpprox = false;
+		/** Lambda Functions **/
+		DoublePredicate approximation = (val)->val<=EPSILON || val>=1-EPSILON;
+		BiFunction<Double,Byte,Double> remainder = (val,dn)->((val*dn)%1);
+		BiPredicate<Double,Byte> divisable = (val,dn) -> approximation.test(remainder.apply(val,dn));
+		b = (short)rn;
+		/** Find the dividend **/
+		if(!divisable.test(rn,dd)) {
+			rn -= b;
+			while (true) {
+				/** Checks divisable by 2 **/
+				dd  <<= 1;
+				if(divisable.test(rn,dd)) {
+					dv = (byte)Math.round(remainder.apply(rn,(byte)1)*dd);
+					break;
+				}
+				dd >>>= 1;
+				/** Checks divisable by 3 **/
+				dd   *= 3;
+				if(divisable.test(rn,dd)) {
+					dv = (byte)Math.round(remainder.apply(rn,(byte)1)*dd);
+					break;
+				}
+				dd   /= 3;
+				/** Fails to meet the requirement, advance the iteration by mult of 2 **/
+				dd  <<= 1;
+				if(dd>=16) {
+					dv = (byte)Math.round(rn * dd);
+					harshpprox = true;
+					break;
+				}
+			}
+		}
+		return Timing.at(b,dv,dd);
+	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
@@ -85,18 +134,77 @@ public class Timing {
 	/** divisor and dividend */
 	private byte dv,dd;
 	// ** ACCESSORS
+	private int getQuotient()  { return b;  }
+	private Twin<Integer> getRational() { return Twin.set(b*dd+dv,0+dd); }
+	private int getRemainder() { return dv; }
+	private int getDivisor()   { return dd; }
 	// ** PREDICATES
 	// ** INTERACTIONS
+	public int    compareTo(@Nullable Timing other) {
+		return Objects.nonNull(other) ? Double.compare(this.toDouble(BPMData.on()),other.toDouble(BPMData.on())) : 1;
+	}
+	public boolean equals(Object other) {
+		return (other != null) && (other instanceof Timing) && equals((Timing) other);
+	}
+	public boolean equals(Timing other) {
+		return this.compareTo(other) == 0;
+	}
 	// ** METHODS
 	public float  toFloat(BPMData bpm) { return (float)toDouble(bpm); }
-	public double toDouble(BPMData bpm) {
-		return (60.0/bpm.getBPM()) * (b + ((double)dv/dd));
-	}
+	public float  toFloat(Timing other,BPMData bpm) { return Timing.interval(this,other).toFloat(bpm); }
+	public double toDouble(BPMData bpm) {	return (60.0/bpm.getBPM()) * (b + (double)dv/(double)dd); }
+	public double toDouble(Timing other, BPMData bpm) { return Timing.interval(this,other).toDouble(bpm); }
 	public String toString() {
-		return String.format("[%s Object: @beat %d, division %d/%d]",
+		return String.format("[%s: @beat %d, division %d/%d]",
 			this.getClass().getSimpleName(),(int)this.b,(int)this.dv,(int)this.dd);
 	}
 	// <<END>> Instance Structure
+	// Nested Class
+	private static final class MathSim {
+		public static final long gcd(long a,long b) {
+			if ((a^b)==0) return a;
+			if ((a^b)==a) return a;
+			if ((a^b)==b) return b;
+			if ((~a & 1) == 1)
+				return (b&1)==1 ? gcd(a>>1,b) : gcd(a>>1,b>>1)<<1;
+			if ((~b & 1) == 1)
+				return gcd(a,b>>1);
+			return (a>b) ? gcd((a-b)>>1,b) : gcd((b-a)>>1,a);
+			/* TODO: iterative
+			long p = 0;
+			while ((a | b) % 2 == 0) {
+				a >>= 1;
+				b >>= 1;
+				p++;
+			}
+			while ((a^b)==0) {
+				if (a%2 == 0) a >>= 1;
+				else if (b % 2 == 0) b >>= 1;
+				else if (a > b) a = ((a-b) >> 1);
+				else b = ((b-a) >> 1);
+			}
+			return (a <<= p); */
+		}
+		public static final Twin<Integer> fractionAdd(int n1, int d1, int n2, int d2) {
+			return Twin.set((n1 * d2 + n2 * d1)/(int)gcd(d1, d2), (d1 * d2) / (int) gcd(d1, d2));
+		}
+		public static final Twin<Integer> fractionAdd(Twin<Integer>... fracs) {
+			return Arrays.stream(fracs).reduce(Twin.set(0,1),
+				(pre,cur)->fractionAdd(pre.getX(),pre.getY(),cur.getX(),cur.getY())
+			);
+		}
+		public static final Twin<Integer> fractionSub(int n1, int d1, int n2, int d2) {
+			return fractionAdd(n1, d1, -n2, d2);
+		}
+		public static final Twin<Integer> fractionSub(Twin<Integer> init,@NotNull Twin<Integer>... fracs) {
+			return Arrays.stream(fracs).reduce(init.swapPair(true).swapPair(),
+				(pre,cur)->fractionSub(pre.getX(),pre.getY(),cur.getX(),cur.getY())
+			);
+		}
+		public static final Twin<Integer> fractionMul(int n1, int d1, int n2, int d2) {
+			return Twin.set((n1*n2)/ (int) gcd(d1, d2),(d1*d2)/ (int) gcd(d1, d2));
+		}
+	}
 	// Constructors
 	private Timing(short b,byte dv,byte dd) {
 		this.b = b; this.dv = dv; this.dd = dd;
