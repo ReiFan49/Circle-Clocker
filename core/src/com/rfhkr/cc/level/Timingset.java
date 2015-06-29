@@ -88,7 +88,27 @@ public final class Timingset implements Serializable {
 		return this;
 	}
 	public Timingset delTiming(Timing k) { tp.remove(k); offsets.remove(k); return this; }
+	public float     at(Timing t) {
+		/** Get Earliest Timing to current cue */
+		Map.Entry<Timing,Float> cue = offsets.entrySet().stream().reduce((pre,cur)->
+			(Timing.compare(cur.getKey(),t)<0) ? cur : pre
+		).get();
+		BPMData closestBPM = tp.get(cue.getKey());
+		return t.toFloat(cue.getKey(),closestBPM)+cue.getValue();
+	}
+	public BPMData   bpm(Timing t) {
+		Map.Entry<Timing,Float> cue = offsets.entrySet().stream().reduce((pre,cur)->
+				(Timing.compare(cur.getKey(),t)<0) ? cur : pre
+		).get();
+		return tp.get(cue.getKey());
+	}
 	public Timing    approx(float time) {
+		return approx(time,16);
+	}
+	public Timing    approx(float time, int  maxdiv) {
+		return approx(time,(byte)maxdiv);
+	}
+	public Timing    approx(float time, byte maxdiv) {
 		/** Get Closest Timing **/
 		Map.Entry<Timing,BPMData> cue = tp.entrySet().stream().reduce((pre,cur)->
 			(Timing.interval(cur.getKey(),pre.getKey()).toFloat(pre.getValue()) >
@@ -97,7 +117,7 @@ public final class Timingset implements Serializable {
 		float closestTiming = offsets.get(cue.getKey());
 		/** Precision Check **/
 		double realNum = (double)(time - closestTiming) * cue.getValue().getBPM() / 60.0;
-		return Timing.valueOf(realNum);
+		return Timing.valueOf(realNum,maxdiv);
 	}
 	// <<END>> Instance Structure
 	// Constructors
@@ -115,9 +135,13 @@ public final class Timingset implements Serializable {
 	}
 	// Driver
 	public static void main(String... argv) {
-		Timingset tps = new Timingset(0.00f,200);
+		final Timingset tps = new Timingset(0.00f,200);
 		Stream.of(0.30f,0.60f,0.90f,0.975f,1.050f,1.125f,1.20f).forEach(t->System.out.println(tps.approx(t)));
 		Stream.of(0.125,0.25,0.375,0.5,0.625,0.75,0.875,1.0).forEach(t->System.out.println(Timing.valueOf(t)));
+		tps.addTiming(Timing.at(10),150);
+		Stream.of(0.5,1.0,1.5,2.0,3.0,5.0,8.0,13.0,21.0,34.0)
+			.map(Timing::valueOf).map(tps::at)
+			.forEach(System.out::println);
 		System.exit(16777216);
 	}
 }

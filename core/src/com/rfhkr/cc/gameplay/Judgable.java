@@ -6,7 +6,7 @@ import com.rfhkr.cc.errors.*;
  * @author Rei_Fan49
  * @since 2015/06/17
  */
-public interface Judgable {
+interface Judgable {
 	// Constant Fields
 	// Abstract Methods
 	// Pre-defined Methods

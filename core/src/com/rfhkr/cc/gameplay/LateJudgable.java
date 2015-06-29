@@ -5,4 +5,4 @@ package com.rfhkr.cc.gameplay;
  * @author Rei_Fan49
  * @since 2015/06/17
  */
-public interface LateJudgable extends Judgable {}
+interface LateJudgable extends Judgable {}

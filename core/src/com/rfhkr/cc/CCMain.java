@@ -1,10 +1,10 @@
 package com.rfhkr.cc;
 
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.assets.*;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.rfhkr.cc.mainmenu.*;
 import com.rfhkr.util.*;
-import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.g2d.*;
 
 public class CCMain extends Game {
 	// Class Structure
@@ -33,16 +33,16 @@ public class CCMain extends Game {
 		this.setScreen(new ScreenMainMenu(this, AdapterInputMainMenu.class));
 	}
 	public void dispose() {
+		super.dispose();
 		System.out.println("App dispose");
 		batch.dispose();
 		font.disposeAll();
 	}
 	public void render () { super.render(); }
-	public void pause  () {	System.out.println("Focus - Lost");}
-	public void resume () {
-		System.out.println("Focus - Get" );
-	}
+	public void pause  () {	super.pause(); System.out.println("Focus - Lost"); }
+	public void resume () { super.resume(); System.out.println("Focus - Get" ); }
 	public void resize (int width,int height) {
+		super.resize(width,height);
 		size.setBoth(width,height);
 		System.out.printf("Resize request %d,%d%n",width,height);
 	}

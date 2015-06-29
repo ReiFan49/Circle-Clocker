@@ -86,7 +86,9 @@ public class Timing implements Comparable<Timing>{
 			return Timing.at(tr.get1st() / tr.get2nd(), tr.get1st() % tr.get2nd(), tr.get2nd());
 		//} catch(Exception e) { System.err.printf("Bad fraction %s + %s => %s%n", t1, t2, e); return null; }
 	}
-	public static Timing valueOf(double realNum) {
+	public static Timing valueOf(double realNum) { return valueOf(realNum,16); }
+	public static Timing valueOf(double realNum,int  maxdiv) { return valueOf(realNum,(byte)maxdiv); }
+	public static Timing valueOf(double realNum,byte maxdiv) {
 		/** Check Precision **/
 		double rn = realNum;
 		short b = 0; byte dv = 0, dd = 1;
@@ -97,9 +99,9 @@ public class Timing implements Comparable<Timing>{
 		BiFunction<Double,Byte,Double> remainder = (val,dn)->((val*dn)%1);
 		BiPredicate<Double,Byte> divisable = (val,dn) -> approximation.test(remainder.apply(val,dn));
 		b = (short)rn;
+		rn -= b;
 		/** Find the dividend **/
 		if(!divisable.test(rn,dd)) {
-			rn -= b;
 			while (true) {
 				/** Checks divisable by 2 **/
 				dd  <<= 1;
@@ -117,13 +119,14 @@ public class Timing implements Comparable<Timing>{
 				dd   /= 3;
 				/** Fails to meet the requirement, advance the iteration by mult of 2 **/
 				dd  <<= 1;
-				if(dd>=16) {
+				if(dd>=maxdiv) {
 					dv = (byte)Math.round(rn * dd);
 					harshpprox = true;
 					break;
 				}
 			}
 		}
+		if(rn>=1-EPSILON) b++;
 		return Timing.at(b,dv,dd);
 	}
 	// <<END>> Class Structure
@@ -155,7 +158,7 @@ public class Timing implements Comparable<Timing>{
 	public double toDouble(BPMData bpm) {	return (60.0/bpm.getBPM()) * (b + (double)dv/(double)dd); }
 	public double toDouble(Timing other, BPMData bpm) { return Timing.interval(this,other).toDouble(bpm); }
 	public String toString() {
-		return String.format("[%s: @beat %d, division %d/%d]",
+		return String.format("[%s: @beat %4d, division %02d/%02d]",
 			this.getClass().getSimpleName(),(int)this.b,(int)this.dv,(int)this.dd);
 	}
 	// <<END>> Instance Structure
@@ -170,7 +173,7 @@ public class Timing implements Comparable<Timing>{
 			if ((~b & 1) == 1)
 				return gcd(a,b>>1);
 			return (a>b) ? gcd((a-b)>>1,b) : gcd((b-a)>>1,a);
-			/* TODO: iterative
+			/* iterative
 			long p = 0;
 			while ((a | b) % 2 == 0) {
 				a >>= 1;

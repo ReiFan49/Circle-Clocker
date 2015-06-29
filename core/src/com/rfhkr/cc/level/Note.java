@@ -29,6 +29,7 @@ public class Note implements Comparable<Note> {
 	public byte getAmp() { return amp; }
 	public Timing getStart() { return time.get1st(); }
 	public Timing getEnd()   { return time.get2nd(); }
+	public Timing getLength(){ return Timing.interval(time.get2nd(),time.get1st()); }
 	public Chart.NoteType getType() { return type; }
 	public Note setPos(byte p) { this.pos=p; return this; }
 	public Note setAmp(byte a) { this.amp=a; return this; }

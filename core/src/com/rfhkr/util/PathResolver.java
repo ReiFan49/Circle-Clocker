@@ -36,7 +36,7 @@ public class PathResolver {
 		return Arrays.stream(resolveAll())
 			 .collect(Collectors.joining(File.separator));
 	}
-	public String toString() {return build().resolve();}
+	public String toString() {return resolve();}
 	// <<END>> Instance Structure
 	// Constructors
 	private PathResolver(String fileName) {

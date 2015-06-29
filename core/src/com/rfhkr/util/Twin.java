@@ -4,8 +4,6 @@
 \*/
 
 package com.rfhkr.util;
-import java.util.*;
-import java.lang.*;
 
 /** manages tuple of two elements of the same class
  *  @param <T> class target
@@ -32,6 +30,9 @@ public class Twin<T> extends Pair<T,T> {
 	@SuppressWarnings("unchecked")
 	public static <E> Twin<E> set(E x,E y) {
 		return new Twin<>(x,y);
+	}
+	public static Twin<?> gen(Object x, Object y) {
+		throw new IllegalAccessError("use Twin.set to create a new Twin object quickly!");
 	}
 	// Instance Methods
 	/** swaps tuple by creating the new class if it has not been referred before.

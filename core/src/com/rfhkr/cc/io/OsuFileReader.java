@@ -5,8 +5,10 @@ import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.cc.level.convert.*;
 import com.rfhkr.util.*;
+import com.sun.istack.internal.*;
 
 import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -40,7 +42,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 			} else {
 				System.out.printf("Parsing osu file format v%s%n",lm.group(1));
 			}
-			while(Objects.nonNull(str = f.readLine())) {
+			while(Objects.nonNull(str = f.readLine()) /** EOF MARKER */) {
 				str = str.replaceAll("\n|\r\n?","");
 				if(Pattern.compile("^$").matcher(str).matches()) continue;
 				if((lm = Pattern.compile("^\\[(\\w+)\\]$").matcher(str)).matches()) {
@@ -60,7 +62,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 					if(lm.group(1).contains("Background and Video events"))
 						try {
 							mt = Pattern.compile("\"(.+)\"").matcher(
-								Pattern.compile(",").split(str = f.readLine())[2]
+								str = Pattern.compile(",").split(f.readLine())[2]
 							);
 							System.out.println(obj = mt.matches() ? mt.group(1) : str);
 						} catch (Exception e) {
@@ -125,6 +127,8 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 						final
 							byte   pos   = (byte)(bm.posMap.indexOf(Twin.set((int)aobj[0],(int)aobj[1]))+1);
 						Timing end   = start;
+						if(pos==0)
+							throw ReiException.invoke();
 						switch((short)aobj[3] & 0b1000_1011) {
 							/** == Tips on handling note types
 							 *  0b0000_0001, NORMAL
@@ -246,9 +250,13 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 	// Constructors
 	// Driver
 	public static void main(String... argv) {
-		(new OsuFileReader()).parse(PathResolver.at("Hiro - VERTeX (Rei Hakurei) [Sample 08].osu").build("resources"));
-		//(new OsuFileReader()).parse(PathResolver.at("nam5 - Heavenly Shake (Kite) [Koa's Lunatic].osu").build("resources"));
-		//(new OsuFileReader()).parse(PathResolver.at("Hiro - VERTeX (Rei Hakurei) [Sample 16].osu").build("resources"));
+		OsuFileReader pars = new OsuFileReader();
+		PathResolver  nova = PathResolver.at("Hiro - VERTeX (Rei Hakurei) [Sample 08].osu")
+			.build("resources","Charts","Hiro (maimai) - VERTeX");
+		/** use arpg style to retain any files that next to the designated &lt;nova&gt; file */
+		@NotNull
+		Path          arpg = (new File(nova.resolve())).toPath().getParent().toAbsolutePath();
+		pars.parse(nova);
 		Chartset.cache.forEach(System.out::println);
 	}
 }

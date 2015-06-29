@@ -8,7 +8,7 @@ import com.rfhkr.cc.gameplay.*;
  * @author Rei_Fan49
  * @since 2015/06/04
  */
-public class MainMenuInteractObjTest<C extends Shape2D> extends AbstractInteract<C> {
+class MainMenuInteractObjTest<C extends Shape2D> extends AbstractInteract<C> {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	// ** ACCESSORS

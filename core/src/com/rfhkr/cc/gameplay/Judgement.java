@@ -4,7 +4,7 @@ package com.rfhkr.cc.gameplay;
  * @author Rei_Fan49
  * @since 2015/06/08
  */
-public enum Judgement {
+enum Judgement {
 	// Enumeration List
 	MISS  (Float.POSITIVE_INFINITY,1.25f,0),
 	BAD   (1.25f,0.70f,100),

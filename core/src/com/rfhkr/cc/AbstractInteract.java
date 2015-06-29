@@ -14,6 +14,7 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 	// ** PROPERTIES
 	/** determines how much far a single frame read for a hold to be treated as drag instead */
 	protected static float   Drag_threshold = 0.0f;
+	/**  */
 	protected static Vector2 input = new Vector2();
 	protected static CCMain  gRef;
 	// <<END>> Class Structure
@@ -63,7 +64,21 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 		hovered &= false;
 		holdDur *= 0.0f;
 	}
-	public final AbstractInteract<C> render(float delta) {
+	/**
+	 * renders input handling for basic interactive objects (handles rendering on other method, to make overriding is
+	 * possible)
+	 * @param delta time passed between frame to frame.
+	 * @return self, method chaining purpose
+	 */
+	public AbstractInteract<C> render(float delta) {
+		return render0(delta);
+	}
+	/**
+	 *
+	 * @param delta time passed between frame to frame.
+	 * @return self, cascades over to {@link #render(float)} method.
+	 */
+	private AbstractInteract<C> render0(float delta) {
 		Vector2 dv = input.set(Gdx.input.getX(),Gdx.input.getY()).sub(pos);
 		if(isInside())
 			if (Gdx.input.isTouched())     // is touched
@@ -81,14 +96,14 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 					holdDur -= holdDur;
 					onTouchUp(dv.x, dv.y);
 				} else
-					if (hovered) onHoverHold(dv.x, dv.y); else onHoverGet(dv.x, dv.y);
+				if (hovered) onHoverHold(dv.x, dv.y); else onHoverGet(dv.x, dv.y);
 				hovered = true;
 			}
 		else
-			if(hovered) {
-				onHoverLost(dv.x,dv.y);
-				hovered = false;
-			}
+		if(hovered) {
+			onHoverLost(dv.x,dv.y);
+			hovered = false;
+		}
 		return this;
 	}
 	/** focuses on draw the class itself */
