@@ -1,7 +1,6 @@
 package com.rfhkr.cc;
 
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.utils.*;
 
 /**
  * interface that allows an object could interact with the collisable
@@ -14,7 +13,7 @@ public interface Interactive<C extends Shape2D> {
 	/** checks whether the input is hovers/touches the object or not */
 	boolean isInside();
 	/** renders the process of the object to make sure the event is fired at the correct time */
-	Interactive render(float delta);
+	Interactive<C> render(float delta);
 	/** an event that fires whenever the object is just touched down */
 	void onTouchDown(float dx,float dy);
 	/** an event that fires whenever the object kept touched over */

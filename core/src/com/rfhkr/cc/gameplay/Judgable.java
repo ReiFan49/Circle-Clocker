@@ -9,18 +9,19 @@ import com.rfhkr.cc.errors.*;
 interface Judgable {
 	// Constant Fields
 	// Abstract Methods
+	Judgement checkTolerance(float hitTime);
 	// Pre-defined Methods
 	default Judgement checkEarliness(float hitTime) {
-		if (!(this instanceof EarlyJudgable))
-			throw new RuntimeException(ReiException.invoke(String.format("This note %s not early-judgeable check",this)));
+		if (this instanceof EarlyJudgable)
+			return checkTolerance(hitTime);
 		else
-			return Judgement.MISS;
+			throw new RuntimeException(ReiException.invoke(String.format("This note %s not early-judgeable check",this)));
 	}
 	default Judgement checkLateness (float hitTime) {
-		if (!(this instanceof LateJudgable))
-			throw new RuntimeException(ReiException.invoke(String.format("This note %s not late-judgeable check",this)));
+		if ((this instanceof LateJudgable))
+			return checkTolerance(hitTime);
 		else
-			return Judgement.MISS;
+			throw new RuntimeException(ReiException.invoke(String.format("This note %s not late-judgeable check",this)));
 	}
 	default Judgement combinedJudge (float earlyHit, float lateHit) {
 		if ((this instanceof EarlyJudgable)&&(this instanceof LateJudgable))

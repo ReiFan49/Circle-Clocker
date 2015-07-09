@@ -194,7 +194,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 			}
 			//bm.posMap.forEach(System.out::println);
 			//System.out.println(bm.timing.getFirstOffset() + "sec");
-			bm.note.forEach((x) -> System.out.printf("{%s} %s -> %s (x%s)%n",x.getPos(),x.getStart(),x.getEnd(),x.getAmp()));
+		//bm.note.forEach((x) -> System.out.printf("{%s} %s -> %s (x%s)%n",x.getPos(),x.getStart(),x.getEnd(),x.getAmp()));
 			bm.convert();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -240,7 +240,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 				.setSeries(meta.get("Source"))
 				.setTimingSet(timing);
 			/** Assign data to chartset **/
-			Chartset cs = Chartset.designate(metadata,ch)
+			Chartset.designate(metadata,ch)
 				.setSongName((String)general.get("AudioFilename"))
 				.setSongBG(bg);
 			return ch;

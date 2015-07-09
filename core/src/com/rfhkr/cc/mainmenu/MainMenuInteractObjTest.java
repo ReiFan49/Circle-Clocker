@@ -1,5 +1,6 @@
 package com.rfhkr.cc.mainmenu;
 
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
@@ -22,7 +23,7 @@ class MainMenuInteractObjTest<C extends Shape2D> extends AbstractInteract<C> {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
-	public void draw() {}
+	public void draw(final SpriteBatch batch) {}
 	public void update() {}
 	public void dispose() {}
 	public void onTouchDown(float dx,float dy) {

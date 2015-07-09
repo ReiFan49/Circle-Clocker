@@ -31,7 +31,7 @@ public class Twin<T> extends Pair<T,T> {
 	public static <E> Twin<E> set(E x,E y) {
 		return new Twin<>(x,y);
 	}
-	public static Twin<?> gen(Object x, Object y) {
+	public static Twin<?> gen(Object x,Object y) {
 		throw new IllegalAccessError("use Twin.set to create a new Twin object quickly!");
 	}
 	// Instance Methods
@@ -51,6 +51,10 @@ public class Twin<T> extends Pair<T,T> {
 	 **/
 	public Twin<T> swapPair() { return swapPair(false); }
 	// Constructors
+	/** constructs a tuple of two element of the same class
+	 *  @param  x tuple item
+	**/
+	public Twin(T x) { super(x,x); }
 	/** constructs a tuple of two element of the same class
 	 *  @param  x tuple item
 	 *  @param  y tuple item

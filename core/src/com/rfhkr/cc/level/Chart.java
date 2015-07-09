@@ -60,7 +60,7 @@ public final class Chart implements Comparable<Chart>{
 		else
 			return diffCharter;
 	}
-	public boolean switchMode() { return (this.diff16Hit!=this.diff16Hit); }
+	public boolean switchMode() { return (this.diff16Hit=!this.diff16Hit); }
 	public Chart setLevel(long lv) { this.diffLevel=(byte)lv; return this; }
 	public Chart setCharter(@Nullable String user) { this.diffCharter=user; return this; }
 	public Chart setDiffType(DiffType d) { this.diffName.setFirst(d); return this; }

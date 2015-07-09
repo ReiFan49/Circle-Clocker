@@ -27,6 +27,7 @@ public class Gameplay extends AbstractScreen {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	private static Timer    timer = new Timer();
+	public static boolean autoplay = true;
 	private static Gameplay self;
 	private static Vector2 lastCachedSize = new Vector2();
 	private static final boolean testMode = true;
@@ -41,6 +42,10 @@ public class Gameplay extends AbstractScreen {
 		Objects.requireNonNull(self, "Cannot retrieve null reference for singleton-ish class");
 		return self;
 	}
+	/** replaces current gameplay object
+	 * @param now new assigned gameplay screen
+	 * @return new assigned gameplay screen
+	 */
 	private static Gameplay now(Gameplay now) {
 		if (Objects.nonNull(self)) {
 			self.dispose();
@@ -89,9 +94,22 @@ public class Gameplay extends AbstractScreen {
 		return lastRecordedInput
 						 .set((cpos.dst(getCenterScreen()) < 16.0f) ? lastRecordedInput : cpos);
 	}
+	private static float getInputAngle() {
+		final float r = (360.0f/now().getMode());
+		float res = Math.round(
+			Math.toDegrees(Math.atan2(lastRecordedInput.x-getCenterScreen().x,getCenterScreen().y-lastRecordedInput.y))/r
+			- 0.5f
+		)*r;
+		return res<0? res+360 : res;
+	}
+	public static int getMouseFieldPos() {
+		final float r = (360.0f/now().getMode());
+		return (int)(getInputAngle()/r) + 1;
+	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
+	private long     tiMillis;
 	private long     timeLoss;
 	private float    timeElapsed;
 	private Path     arpg;
@@ -109,6 +127,7 @@ public class Gameplay extends AbstractScreen {
 	private Map<NoteType,Integer> score;
 	private Map<Judgement,Integer> judge;
 	// ** ACCESSORS
+	public float    getElapsed() { return timeElapsed; }
 	public Metadata getMetadata() { return selectedSet.getMetadata(); }
 	public String   getBG() { return selectedSet.getSongBG(); }
 	public String   getSong() { return selectedSet.getSongName(); }
@@ -160,7 +179,7 @@ public class Gameplay extends AbstractScreen {
 		timeLoss = System.nanoTime() / 1000000;
 	}
 	public void resume () {
-		if(timeElapsed>=0) bgm.play();
+		if(timeElapsed==bgm.getPosition()) bgm.play();
 		long delta = System.nanoTime() / 1000000 - timeLoss;
 		System.out.printf("Out of focus for: \u001b[1;31m%4d\u001b[mms%n",delta);
 		timer.delay(-delta);
@@ -169,8 +188,15 @@ public class Gameplay extends AbstractScreen {
 	}
 	// ** METHODS
 	public void processStepPre (float delta) {
+		if(delta > 0.067f) {
+			Gdx.app.log("LAG",String.format("Delay @%1.3fmsec",delta));
+			timer.delay(Math.round(delta*1000));
+			Gdx.app.log("Timer",String.format("Added @%4dsec",Math.round(delta * 1000)));
+		}
+		tiMillis = System.currentTimeMillis();
 		timeElapsed = (timeElapsed < 0) ? timeElapsed+delta : bgm.isPlaying() ? bgm.getPosition() : timeElapsed;
 		currentTiming = selectedSet.getMetadata().getTimingSet().approx(timeElapsed,256);
+		input(Gdx.input.getX(),Gdx.input.getY());
 	}
 	public void processStepMain(float delta) {
 		for(AbstractInteract o : obj)
@@ -182,10 +208,13 @@ public class Gameplay extends AbstractScreen {
 			batch.draw(bg,0,0,gRef.getSize().get1st(),gRef.getSize().get2nd());
 		if(hitZone!=null)
 			for(int i=0;i<selectedSet.getDifficulties(chartIndex).getMode();i++) {
-				batch.setColor(1.0f,1.0f,1.0f,
+				Byte[] buff = new Byte[]{-1,-1,-1,-1};
+				CursorHandler.get(getMouseFieldPos(),buff);
+				boolean hovered = Arrays.asList(buff).indexOf((byte)(i+1))>=0;
+				batch.setColor(1.0f,1.0f - (hovered ? 0.4f : 0.0f),1.0f,
 					1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f));
 				batch.draw(hitZone.get(i),
-					getCenterScreen().x,getCenterScreen().y-256,
+					getCenterScreen().x,getCenterScreen().y - 256,
 					0.0f,256.0f,
 					256.0f,256.0f,
 					-1,1,
@@ -206,31 +235,104 @@ public class Gameplay extends AbstractScreen {
 			),
 			32, 48
 		);
+		gRef.font.getDefault().setColor(1.0f,1.0f * (bgm.isPlaying() ? 0 : 1),1.0f * (bgm.isPlaying() ? 0 : 1),1.0f);
 		gRef.font.getDefault().draw(batch,
-			String.format("%6.3fsec%n%s",timeElapsed,currentTiming),
-			400, 48, 368, 0, false
+			String.format("%6.3fsec%n%s%nPosition: %d (%4.2f,%4.2f,%4.2fdeg)",timeElapsed,currentTiming,
+				getMouseFieldPos(),lastRecordedInput.x,lastRecordedInput.y,
+				getInputAngle()
+			),
+			400,48,368, 0, false
 		);
+		gRef.font.getDefault().setColor(1.0f,1.0f,1.0f,1.0f);
 		gRef.font.getDefault().draw(batch,
-			String.format("%6.1f (%3d)fps",1/delta,Gdx.graphics.getFramesPerSecond()),
+			String.format("%6.1f (%3d)fps (%5dmsec)",
+				1/delta
+				,Gdx.graphics.getFramesPerSecond(),
+				System.currentTimeMillis()-tiMillis
+			),
 			720, 576, 80, 0, false
 		);
 		//gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
 		for(AbstractInteract o : obj)
-			o.draw();
+			o.draw(batch);
 
 		batch.end();
 	}
 	public void processStepPost(float delta) {
+	}
+	private void determineBestRoute() {
+		CursorHandler.ChartSolver.clear();
+		Chart     chartRef  = selectedSet.getDifficulties(chartIndex);
+		Timing    lastTime  = Timing.shift(chartRef.chart.peek().getEnd(),Timing.at(1));
+		Note      lastNote  = new Note(NoteType.NOTE_NORM,1,lastTime,lastTime);
+		float[]   statetime = new float[getMode()];
+		boolean[] statenow, statenext;
+			statenow  = new boolean[(statenext = new boolean[getMode()]).length];
+		float timeprev = -0.001f;
+		Array<Pair<CursorHandler.Mode,Byte>> solution;
+		Arrays.fill(statetime,-0.001f);
+		Arrays.fill(statenow ,false);
+		Arrays.fill(statenext,false);
+		chartRef.chart.add(lastNote);
+		for(Note note : chartRef.chart) {
+			// Let previous time initialized and not match with current time to process the next sequence
+			float timenow = currentTimings.at(note.getStart());
+			if (timeprev != timenow) {
+				if(timeprev >= 0.0f) {
+					// DO SOMETHING
+				}
+				// refresh state
+				CursorHandler.ChartSolver.send(timeprev,Arrays.copyOf(statenext,statenext.length));
+				statenow = Arrays.copyOf(statenext,statenext.length);
+				timeprev = timenow;
+				// release all the state that already expires
+				for(int i=0;i<statenext.length;i++)
+					statenext[i] &= statetime[i] >= timeprev;
+				for(int i=0;i<statenow.length;i++)
+					statenow[i] &= statetime[i] > timenow;
+			}
+			statenext[(byte)(note.getPos()-1)] = true;
+			statetime[(byte)(note.getPos()-1)] = currentTimings.at(note.getEnd());
+		}
+		chartRef.chart.removeValue(lastNote,true);
+		CursorHandler.ChartSolver.solve();
+		CursorHandler.ChartSolver.getSolution().forEach((time,type) ->
+			timer.scheduleTask(new AutoInputHandle(type.getX(),type.getY()),time)
+		);
 	}
 	// <<END>> Instance Structure
 	// Nested Classes
 	public static final class Setup /* Struct */ {
 		// Class Properties
 		public int approach = 4;
-		private final double powerRate = Math.log(Math.pow(3,0.25));
+		public boolean plus = false;
+		private final double powerRate = Math.log(Math.pow(4,0.25));
 		// Class Accessors
+		public float approach() { return approach(approach,plus); }
+		public float approach(int GS) { return approach(GS,plus); }
+		public float approach(int GS, boolean GSP) {
+			return (approach=GS) + ((plus=GSP) ? 1 : 0) / 2.0f;
+		}
+		public void  approachSucc() {
+			if (!isSpeedG2GF()) approach(approach + (!plus ? 0 : 1),!plus);
+		}
+		public void  approachPred() {
+			if (!isSpeedSlug()) approach(approach - (plus ? 0 : 1),!plus);
+		}
+		public boolean isSpeedSlug() { return approach() <= 1 && (approach(1) == 1); }
+		public boolean isSpeedG2GF() { return approach() > 10; }
 		public float getApproachTime() {
-			return (float)Math.exp((5 - approach)*powerRate);
+			return isSpeedG2GF() ? 0.04f : (float)Math.exp((5 - approach())*powerRate);
+		}
+	}
+	private static final class SingletonCalibrator extends Timer.Task {
+		public static SingletonCalibrator self = new SingletonCalibrator();
+		public void run() {}
+	}
+	private static final class BGMCalibrator extends Timer.Task {
+		public static final BGMCalibrator self = new BGMCalibrator();
+		public void run() {
+			Gameplay.now().bgm.play();
 		}
 	}
 	private static final class AssistTick extends Timer.Task {
@@ -259,7 +361,10 @@ public class Gameplay extends AbstractScreen {
 	private static final class NoteCreation extends Timer.Task {
 		private static float approach = setup.getApproachTime();
 		private NoteBasic item;
-		public void run() {}
+		public void run() {
+			if(Objects.nonNull(item))
+				Gameplay.now().obj.add(item);
+		}
 		public NoteCreation(@NotNull Note noteData) {
 			switch(noteData.getType()) {
 				case NOTE_NORM:
@@ -268,12 +373,32 @@ public class Gameplay extends AbstractScreen {
 					);
 					break;
 				case NOTE_LONG:
+					item = new NoteLong(noteData.getPos(),
+						now().currentTimings.at(noteData.getStart()),
+						now().currentTimings.at(noteData.getEnd())
+					);
 					break;
 				case NOTE_SLDE:
 					break;
 				default:
 					break;
 			}
+		}
+	}
+	private static final class AutoInputHandle extends Timer.Task {
+		private final Pair<CursorHandler.Mode,Byte> cmd;
+		public void run() {
+			int
+				x = (int)posMap.get(Gameplay.now().getMode()).get(cmd.get2nd()-1).x,
+				y = (int)posMap.get(Gameplay.now().getMode()).get(cmd.get2nd()-1).y;
+			Gdx.input.setCursorPosition(x,y);
+			CursorHandler.type(cmd.get1st());
+		}
+		public AutoInputHandle(CursorHandler.Mode m,Byte p) {
+			cmd = Pair.gen(m,p);
+		}
+		public AutoInputHandle(Pair<CursorHandler.Mode,Byte> p) {
+			cmd = p;
 		}
 	}
 	// Constructors
@@ -304,14 +429,16 @@ public class Gameplay extends AbstractScreen {
 		hitZone = new Array<>(0);
 		try {
 			int i = 0, j = selectedSet.getDifficulties(chartIndex).getMode();
-			hitZone = new Array<>(j);
-			touchTest = new Array<>(new Float[]{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f});
-			while(i++ < j)
+			hitZone = new Array<>(false,j);
+			touchTest = new Array<>(false,j);
+			while(i++ < j) {
 				hitZone.add(
 					new TextureRegion(
 						new Texture(String.format("core\\assets\\pie%02d.png",j))
 					)
 				);
+				touchTest.add(0.0f);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			hitZone.forEach(s -> s.getTexture().dispose());
@@ -327,32 +454,49 @@ public class Gameplay extends AbstractScreen {
 		/** no offset needed, as long as it was done on this anonymous class **/
 		float
 			earlyStart = Timing.interval(currentTimings.approx(0),Timing.at(4)).toFloat(currentTimings.earliest()),
-			earlyNote  = currentTimings.at(selectedSet.getDifficulties(chartIndex).chart.get(0).getStart());
+			earlyNote  = currentTimings.at(selectedSet.getDifficulties(chartIndex).chart.get(0).getStart())
+				- setup.getApproachTime();
 		boolean
-			isNoteFirst = Float.compare(earlyStart,earlyNote -= setup.getApproachTime())>0;
-		timer.scheduleTask(new AssistTick(),
-			earlyStart - timeElapsed + Timing.at(12).toFloat(currentTimings.earliest()),
-			(float)(60.0/currentTimings.earliest().getBPM()), 3
-		);
-		System.out.println(timer.scheduleTask(new Timer.Task() {
+			isNoteFirst = Float.compare(earlyStart,earlyNote)>0;
+		System.out.println(earlyStart);
+		System.out.println(earlyNote);
+		System.out.println(isNoteFirst);
+		CursorHandler.type(CursorHandler.Mode.SPREAD);
+		NoteBasic.approach = setup.getApproachTime();
+		timer.postTask(new Timer.Task() {
 			public void run() {
-				bgm.play();
+				timeElapsed = Math.min(0,Math.min(earlyNote,earlyStart));
+				long timerOffset = timer.postTask(SingletonCalibrator.self).getExecuteTimeMillis();
+				long solveTime = System.nanoTime()/1000000;
+				if (autoplay) {
+					timer.postTask(new AutoInputHandle(CursorHandler.Mode.SINGLE,(byte) 1));
+					determineBestRoute();
+				}
+				timer.scheduleTask(new AssistTick(),
+					timeElapsed - Timing.at(8).toFloat(currentTimings.earliest()),
+					(float)(60.0/currentTimings.earliest().getBPM()), 3
+				);
 				selectedSet.getDifficulties(chartIndex).chart.forEach(note -> {
+					timer.postTask(new NoteCreation(note));
 					timer.scheduleTask(
-						new NoteCreation(note),
-						currentTimings.at(note.getStart()) - setup.getApproachTime()
-					);
-					timer.scheduleTask(new AssistTick(),currentTimings.at(note.getStart()));
-					timer.scheduleTask(
-						(note.getType() != NoteType.NOTE_NORM) ?
-						new TouchCheck(note.getPos() - 1,
-							note.getLength().toFloat(currentTimings.bpm(note.getStart()))) :
-						new TouchCheck(note.getPos() - 1),
+						note.getType()==NoteType.NOTE_NORM ?
+							new TouchCheck(note.getPos()-1) :
+							new TouchCheck(note.getPos()-1,note.getLength().toFloat(currentTimings.bpm(note.getStart()))),
 						currentTimings.at(note.getStart())
 					);
+					timer.scheduleTask(new AssistTick(),
+						currentTimings.at(note.getStart()),
+						note.getLength().toFloat(currentTimings.bpm(note.getStart())),
+						note.getType()==NoteType.NOTE_NORM ? 0 : 1
+					);
 				});
+				timer.delay(Math.round(-timeElapsed * 1000));
+				timer.scheduleTask(BGMCalibrator.self,-timeElapsed);
+				timer.delay((timerOffset - solveTime) * 2);
+				timer.delay(solveTime - System.nanoTime() / 1000000);
 			}
-		},-(timeElapsed = Math.min(0.0f,Math.min(earlyStart,earlyNote)))));
+		});
+		//timer.delay(-1000);
 	}
 	// Driver
 }

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.*;
+import com.rfhkr.cc.gameplay.*;
 
 /**
  * @author Rei_Fan49
@@ -57,8 +58,19 @@ public class ScreenMainMenu extends AbstractScreen {
 		batch.begin();
 
 		gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
+		gRef.font.getDefault().draw(batch,
+			String.format("GS%s (%2dframes/%4dms)",
+				Gameplay.setup.isSpeedG2GF() ? "SONIC" : String.format("%1.1f",Gameplay.setup.approach()),
+				Math.round(Gameplay.setup.getApproachTime() * 60),
+				Math.round(Gameplay.setup.getApproachTime() * 1000)
+			) ,
+			100, 112, 600, 1, false);
+		gRef.font.getDefault().draw(batch,
+			"Press ENTER to play\n" +
+			"Press D-key to adjust guide speed" ,
+			100, 128, 600, 1, false);
 		for(AbstractInteract o : obj)
-			o.draw();
+			o.draw(batch);
 
 		batch.end();
 	}

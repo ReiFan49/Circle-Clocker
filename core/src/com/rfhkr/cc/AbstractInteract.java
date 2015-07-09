@@ -1,6 +1,7 @@
 package com.rfhkr.cc;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.mainmenu.*;
 import com.sun.istack.internal.*;
@@ -107,7 +108,7 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 		return this;
 	}
 	/** focuses on draw the class itself */
-	public abstract void draw();
+	public abstract void draw(final SpriteBatch batch);
 	/** focuses on handling per step processing */
 	public abstract void update();
 	/** disposes any gdx resources that included on this object unless poolable */

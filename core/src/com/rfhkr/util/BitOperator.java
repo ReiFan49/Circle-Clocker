@@ -1,7 +1,8 @@
 package com.rfhkr.util;
 
-import java.util.*;
 import java.lang.reflect.*;
+import java.util.*;
+import java.util.stream.*;
 
 /**
  *  performs bit manipulation on number data
@@ -251,6 +252,22 @@ public final class BitOperator {
 		} catch (Exception e) {
 			return showBits(x,64);
 		}
+	}
+	public static long bitConstruct(Boolean... bits) {
+		return bitConstruct(Stream.of(bits).mapToInt(x->x?1:0).toArray());
+	}
+	public static long bitConstruct(int... bits) {
+		byte[] nbit = new byte[bits.length];
+		for(int i=0;i<bits.length;i++)
+			nbit[i]=(byte)bits[i];
+		return bitConstruct(nbit);
+	}
+	public static long bitConstruct(byte... bits) {
+		return bitConstruct(bits[0],Arrays.copyOfRange(bits,1,bits.length-1));
+	}
+	private static long bitConstruct(long val, byte... bits) {
+		return (bits.length<=1) ? (val<<1)|bits[0] :
+			bitConstruct((val<<1)|bits[0],Arrays.copyOfRange(bits,1,bits.length-1));
 	}
 	/** Bit Operator Test
 	 *  class test drive

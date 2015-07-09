@@ -9,7 +9,9 @@ import com.rfhkr.util.*;
 public class CCMain extends Game {
 	// Class Structure
 	// - Properties
+	private static CCMain me;
 	// - Accessors
+	public static CCMain me() { return me; }
 	// - Predicates
 	// - Interactions
 	// - Methods
@@ -45,5 +47,9 @@ public class CCMain extends Game {
 		super.resize(width,height);
 		size.setBoth(width,height);
 		System.out.printf("Resize request %d,%d%n",width,height);
+	}
+	// Constructor
+	{
+		me = this;
 	}
 }

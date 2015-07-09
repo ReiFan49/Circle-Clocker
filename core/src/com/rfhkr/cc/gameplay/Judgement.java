@@ -6,11 +6,19 @@ package com.rfhkr.cc.gameplay;
  */
 enum Judgement {
 	// Enumeration List
-	MISS  (Float.POSITIVE_INFINITY,1.25f,0),
-	BAD   (1.25f,0.70f,100),
-	HIT   (0.70f,0.45f,300),
-	EXCEL (0.45f,0.00f,500),
-	JUST  (0.25f,0.00f, 50);
+	/** marks a judgement as   MISS  and does not give a score */
+	MISS  (Float.POSITIVE_INFINITY,0.125f,0),
+	/** marks a judgement as   BAD   and give 1/5 of the score */
+	BAD   (0.125f,0.070f,100),
+	/** marks a judgement as  GREAT  and give 3/5 of the score */
+	HIT   (0.070f,0.045f,300),
+	/** marks a judgement as PERFECT and give 5/5 of the score */
+	EXCEL (0.045f,0.000f,500),
+	/** SPECIAL JUDGEMENT =>
+	 only applied whenever the player directly change the cursor right before the note comes to
+	 hit (good for early check)
+	 */
+	JUST  (0.025f,0.000f, 50);
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	// ** ACCESSORS

@@ -2,6 +2,7 @@ package com.rfhkr.cc.gameplay;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
@@ -24,17 +25,31 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// ** PROPERTIES
 	/** main sensor that will be used against the object */
 	protected static Circle  baseSensor;
-	protected static Texture baseTexture;
-	protected static String   textureFN = "noteFull.png";
+	protected static final Texture[] baseTexture = new Texture[4];
+	private   static Texture[] triCache;
+	protected static String  textureFN = "noteFull.png";
+	protected static final float pcOFFSET = 0.3333f;
+	static float approach = 1.0f;
 	// ** ACCESSORS
 	/** retrieves the globally used sensor along the subclasses */
 	protected static final Circle getBasicSensor() {
 		return Objects.isNull(baseSensor) ? (baseSensor = new Circle(0, 0, 1)) : baseSensor;
 	}
-	protected static final Texture getBasicTexture() {
-		return Objects.isNull(baseTexture) ?
-			(baseTexture=new Texture(Gdx.files.internal(PathResolver.at("noteFull.png").build("core","assets").resolve()))) :
-			baseTexture;
+	protected static final Texture getSingleTexture() {
+		return (Objects.isNull(baseTexture[0])) ?
+			baseTexture[0] =
+				new Texture(Gdx.files.internal(PathResolver.at("noteFull.png").build("core","assets").resolve())) :
+			baseTexture[0];
+	}
+	protected static final Texture[] getTripleTexture() {
+		if(Objects.isNull(baseTexture[1])) {
+			final String[] fn = new String[]{"noteTail.png","noteBody.png","noteHead.png"};
+			for(int i=1;i<=3;i++)
+				baseTexture[i] = new Texture(Gdx.files.internal(PathResolver.at(fn[i-1]).build("core","assets").resolve()));
+		}
+		return (Objects.isNull(triCache)) ?
+			triCache = Arrays.copyOfRange(baseTexture,1,4) :
+			triCache;
 	}
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -42,34 +57,48 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
+	protected boolean holdDown,justBonus;
 	protected Array<Texture> noteSprite;
 	protected byte  slot;
 	protected float time_s;
 	protected float time_e;
 	protected byte  amp;
+	protected Twin<Vector2> desigPos;
+	protected Twin<Float> hitTime;
 	protected Twin<Judgement> judgeResult;
 	// ** ACCESSORS
 	public byte  getNotePos() { return slot; }
 	public float getApproachStartTime() { return time_s; }
 	public float getApproachEndTime()   { return time_e; }
 	public byte  getNoteAmp() { return amp;  }
+	public Judgement getDownJudgement() { return judgeResult.get1st(); }
+	public Judgement getUpJudgement() { return judgeResult.get2nd(); }
+	public float getHitTime() { return hitTime.get1st(); }
+	public float getRlsTime() { return hitTime.get2nd(); }
+	protected void setDownJudgement(Judgement j) { judgeResult.set1st(j); }
+	protected void setUpJudgement(Judgement j) { judgeResult.set2nd(j); }
+	protected NoteBasic setHitTime(float t) { hitTime.set1st(t); return this; }
+	protected NoteBasic setRlsTime(float t) { hitTime.set2nd(t); return this; }
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
+	public Judgement checkTolerance(float hitTime) {
+		return Arrays.stream(Judgement.values(),1,4).reduce(Judgement.MISS,(pre,cur)-> hitTime > cur.maxTime ? pre : cur);
+	}
 	/**
 	 * performs the <code>noteHit</code> event handling, by replacing {@link AbstractInteract} render method.
 	 * @param delta time passed between frame to frame.
 	 * @return self, to be passed on {@link #render(float)} method
 	 */
-	// TODO: overrides abstract interact onTouch,onHover,render process.
 	private final <CurrentItem> CurrentItem render0(float delta, CurrentItem self) {
+		// TODO: overrides abstract interact onTouch,onHover,render process.
 		return self;
 	}
 	/**
 	 * alters the render function that specified by {@link AbstractInteract}
 	 * @param delta time passed between frame to frame.
 	 * @return self, to allow separated processing between <code>noteHit</code> event handling and animation handling,
-	 * which uses {@link #draw()} and {@link #update()} method.
+	 * which uses {@link #draw(SpriteBatch)} and {@link #update()} method.
 	 */
 	public final NoteBasic render(float delta) {
 		return render0(delta,this);
@@ -122,6 +151,9 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 		this.time_e = e;
 		this.amp = (byte)Math.max(Math.min(n, Byte.MAX_VALUE), 1);
 		this.noteSprite = new Array<>(false,3);
+		this.hitTime = new Twin<>(Float.NEGATIVE_INFINITY);
+		this.judgeResult = new Twin<>(null);
+		this.desigPos = new Twin<>(Gameplay.posMap.get(Gameplay.now().getMode()).get(slot-1));
 		initializeNoteTexture();
 		//this.noteSprite = new Texture(Gdx.files.internal(PathResolver.at(textureFN).resolve()));
 	}

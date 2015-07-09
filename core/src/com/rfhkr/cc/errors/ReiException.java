@@ -1,12 +1,10 @@
 package com.rfhkr.cc.errors;
 
-import java.util.function.*;
-
 /**
  * @author Rei_Fan49
  * @since 2015/06/08
  */
-public class ReiException extends Exception {
+public class ReiException extends Error {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	// ** ACCESSORS
@@ -34,9 +32,9 @@ public class ReiException extends Exception {
 	// ** METHODS
 	// <<END>> Instance Structure
 	// Constructors
-	private ReiException() { super(); }
-	private ReiException(String msg) { super(msg); }
-	private ReiException(Throwable cause) { super(cause); }
-	private ReiException(String msg,Throwable cause) { super(msg,cause); }
+	protected ReiException() { super(); }
+	protected ReiException(String msg) { super(msg); }
+	protected ReiException(Throwable cause) { super(cause); }
+	protected ReiException(String msg,Throwable cause) { super(msg,cause); }
 	// Driver
 }
