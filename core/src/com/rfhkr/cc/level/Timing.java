@@ -13,7 +13,7 @@ import java.util.function.*;
 public class Timing implements Comparable<Timing>{
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	private static final Map<Pair<Short,Twin<Byte>>,Timing> cache = new TreeMap<>((a,b)-> {
+	private static transient final Map<Pair<Short,Twin<Byte>>,Timing> cache = new TreeMap<>((a,b)-> {
 		int c;
 		if((c = Short.compare(a.get1st(),b.get1st()))!=0) return c;
 		if((c = Byte .compare(a.get2nd().get1st(),b.get2nd().get1st()))!=0) return c;

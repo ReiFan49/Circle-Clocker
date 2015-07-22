@@ -2,6 +2,8 @@ package com.rfhkr.cc.gameplay;
 
 import com.badlogic.gdx.graphics.g2d.*;
 import com.sun.istack.internal.*;
+import com.rfhkr.cc.level.Chart.NoteType;
+import static com.rfhkr.cc.level.Chart.NoteType.*;
 
 import java.util.function.*;
 
@@ -20,6 +22,7 @@ class NoteSingle extends NoteBasic implements LateJudgable {
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
 	// ** ACCESSORS
+	public NoteType getType() { return NOTE_NORM; }
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
@@ -45,7 +48,8 @@ class NoteSingle extends NoteBasic implements LateJudgable {
 			fY    = () ->
 				pos.y + (desigPos.getX().y - pos.y) * fApp.get() - 32;
 		// only draw this if
-		if(fPro.get() >= 0.0f && Gameplay.now().getElapsed() < limhgh) {
+		double d = fApp.get() * Math.hypot(pos.x - desigPos.getX().x,pos.y - desigPos.getX().y);
+		if(fPro.get() >= 0.0f && d <= 288) {
 			if(fPro.get() < 0.5f) {
 				/** Appearance process */
 				batch.setColor(1,1,1,fScal.get());

@@ -6,10 +6,12 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
+import com.rfhkr.cc.level.Chart.NoteType;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
 import java.util.*;
+import java.util.function.*;
 
 /**
  * NoteBasic class makes every object created under this specification have altered way on handling interactive
@@ -57,7 +59,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
-	protected boolean holdDown,justBonus;
+	protected boolean touch, holdDown,judged,justBonus[];
 	protected Array<Texture> noteSprite;
 	protected byte  slot;
 	protected float time_s;
@@ -66,6 +68,12 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	protected Twin<Vector2> desigPos;
 	protected Twin<Float> hitTime;
 	protected Twin<Judgement> judgeResult;
+	private   final BiConsumer<Judgement,Integer> checkExcelSonic = (jdg,ind)->{
+		if(jdg == Judgement.EXCEL && Gameplay.setup.isSpeedG2GF()) {
+			justBonus[ind-1] = true;
+			Gameplay.now().onJustTiming(this);
+		}
+	};
 	// ** ACCESSORS
 	public byte  getNotePos() { return slot; }
 	public float getApproachStartTime() { return time_s; }
@@ -73,8 +81,13 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	public byte  getNoteAmp() { return amp;  }
 	public Judgement getDownJudgement() { return judgeResult.get1st(); }
 	public Judgement getUpJudgement() { return judgeResult.get2nd(); }
+	public Judgement getWorstJudgement() {
+		return getUpJudgement()==null || getDownJudgement().compareTo(getUpJudgement()) <= 0 ?
+					 getDownJudgement() : getUpJudgement();
+	}
 	public float getHitTime() { return hitTime.get1st(); }
 	public float getRlsTime() { return hitTime.get2nd(); }
+	public abstract NoteType getType();
 	protected void setDownJudgement(Judgement j) { judgeResult.set1st(j); }
 	protected void setUpJudgement(Judgement j) { judgeResult.set2nd(j); }
 	protected NoteBasic setHitTime(float t) { hitTime.set1st(t); return this; }
@@ -82,6 +95,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
+	void hasJudged() { judged = true; holdDown = false; }
 	public Judgement checkTolerance(float hitTime) {
 		return Arrays.stream(Judgement.values(),1,4).reduce(Judgement.MISS,(pre,cur)-> hitTime > cur.maxTime ? pre : cur);
 	}
@@ -91,7 +105,72 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	 * @return self, to be passed on {@link #render(float)} method
 	 */
 	private final <CurrentItem> CurrentItem render0(float delta, CurrentItem self) {
-		// TODO: overrides abstract interact onTouch,onHover,render process.
+		Gameplay gp = Gameplay.now();
+		/** Ignore JUST checking in SONIC SPEED
+		 *  for every EXCEL judgement given it will yield JUST too
+		 */
+		if(!Gameplay.setup.isSpeedG2GF()) {
+			final float justTolerance = Judgement.JUST.maxTime;
+			for(int i=0;i<(this instanceof EarlyJudgable ? 2 : 1);i++) {
+				float cueTime = i==0?time_s:time_e,
+					currentTime = i==0?gp.getLastHit(slot):gp.getLastRls(slot);
+				if(!justBonus[i] && Math.abs(gp.getElapsed()-cueTime)<=justTolerance) {
+					if(Math.abs(
+						currentTime -
+						cueTime
+					)<=justTolerance) {
+						//System.out.printf("@%01.3fs (%2d) -- %1.3f <== \u001b[1;34m%1.3f\u001b[m (<=%1.3f)%n",time_s,slot,cueTime,currentTime,justTolerance);
+						justBonus[i]|=true;
+						gp.onJustTiming(this);
+					} else {
+						//System.out.printf("@%01.3fs (%2d) -- %1.3f <== %1.3f%n",time_s,slot,cueTime,currentTime);
+					}
+				}
+			}
+		}
+		// Judgement check
+		if(!judged)
+			if (judgeResult.get1st()!=null && !(judgeResult.get2nd()!=null ^ this instanceof EarlyJudgable)) {
+				/** State : all judgement slot is filled
+				 *  Result: find the natural judgement of the note
+				 */
+				gp.onJudgeGiven(this,justBonus);
+			} else if (gp.getElapsed()>=(((this instanceof EarlyJudgable) ? time_s : time_e) + Judgement.MISS.minTime) &&
+				judgeResult.get1st()==null) {
+				/** State : not hovering the note after specified duration from note timing
+				 *  Result: MISS judgement
+				 */
+				judgeResult.set1st(Judgement.MISS);
+				gp.onJudgeGiven(this,justBonus);
+			} else if (gp.getElapsed()>=time_e && judgeResult.get1st()!=null) {
+				/** State : not releasing a hold note after the hold expires
+				 *  Result: let the LATE judgement that affects the scoring
+				 */
+				if(judgeResult.get2nd()==null && holdDown)
+					judgeResult.set2nd(Judgement.EXCEL);
+				checkExcelSonic.accept(judgeResult.getY(),2);
+				gp.onJudgeGiven(this,justBonus);
+			} else {
+				if (holdDown /* means holdable */ &&
+						(!gp.getIsHit(slot)&&gp.getElapsed()<=time_e) &&
+					judgeResult.get2nd() == null ) {
+					/** State : releasing the hold note before the hold expires
+					 *  Result: give a second judgement that might lower the result of the first judgement
+					 */
+					judgeResult.set2nd(checkEarliness(Math.abs(gp.getLastRls(slot) - time_e)));
+					checkExcelSonic.accept(judgeResult.getY(),2);
+				}
+				if (gp.getElapsed() >= time_s && gp.getIsHit(slot) && judgeResult.get1st() == null) {
+					/** State : hovering any kind of note before specified time limit
+					 *  Result: give first judgement to the note, and proceed if required
+					 */
+					judgeResult.set1st(checkLateness(gp.getLastHit(slot) - time_s));
+					checkExcelSonic.accept(judgeResult.getX(),1);
+					holdDown = this instanceof EarlyJudgable;
+					if(!holdDown)
+						gp.onJudgeGiven(this,justBonus);
+				}
+			}
 		return self;
 	}
 	/**
@@ -143,7 +222,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	public NoteBasic(int slot,Twin<Float> time,int n) { this(slot,time.get1st(),time.get2nd(),n); }
 	public NoteBasic(int slot,float s,int n) { this(slot,s,s,n); }
 	public NoteBasic(int slot,float s,float e,@NotNull int n) {
-		super(null,null); // i'm really sorry for doing this, i hate super above :>
+		super(gRef,null,null); // i'm really sorry for doing this, i hate super above :>
 		this.slot = (byte)Math.max(1,Math.min(16,slot));
 		this.pos = new Vector2(Gameplay.getCenterScreen());
 		this.touchGeo = getBasicSensor();
@@ -154,6 +233,10 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 		this.hitTime = new Twin<>(Float.NEGATIVE_INFINITY);
 		this.judgeResult = new Twin<>(null);
 		this.desigPos = new Twin<>(Gameplay.posMap.get(Gameplay.now().getMode()).get(slot-1));
+		this.touch = false;
+		this.holdDown = false;
+		this.judged = false;
+		this.justBonus = new boolean[]{false,false};
 		initializeNoteTexture();
 		//this.noteSprite = new Texture(Gdx.files.internal(PathResolver.at(textureFN).resolve()));
 	}

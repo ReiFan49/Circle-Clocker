@@ -1,0 +1,97 @@
+osu file format v14
+
+[General]
+AudioFilename: thC32.mp3
+AudioLeadIn: 0
+PreviewTime: 86010
+Countdown: 0
+SampleSet: Normal
+StackLeniency: 0.3
+Mode: 0
+LetterboxInBreaks: 1
+StoryFireInFront: 0
+WidescreenStoryboard: 0
+
+[Editor]
+Bookmarks: 1632,12181,33280,54379,75478,86027,107126,128225,149324
+DistanceSpacing: 0.8
+BeatDivisor: 2
+GridSize: 8
+TimelineZoom: 1
+
+[Metadata]
+Title:G Free ~ Ultimate Dream
+TitleUnicode:G Free ～ Ultimate Dream
+Artist:Myon
+ArtistUnicode:みょん
+Creator:Rei Hakurei
+Version:First Dream
+Source:Touhou
+Tags:CirClockChart SIMPLE08 LEVEL03 thctc danmakufu danmaq reimu white mushuugeki concealed the conclusion
+BeatmapID:139511
+BeatmapSetID:28547
+
+[Difficulty]
+HPDrainRate:5
+CircleSize:4
+OverallDifficulty:5
+ApproachRate:8
+SliderMultiplier:1
+SliderTickRate:1
+
+[Events]
+//Background and Video events
+0,0,"bg.png",0,0
+//Break Periods
+//Storyboard Layer 0 (Background)
+//Storyboard Layer 1 (Fail)
+//Storyboard Layer 2 (Pass)
+//Storyboard Layer 3 (Foreground)
+//Storyboard Sound Samples
+
+[TimingPoints]
+1632,329.67032967033,4,1,0,70,1,0
+
+
+[Colours]
+Combo1 : 255,255,0
+Combo2 : 255,0,0
+Combo3 : 255,128,64
+Combo4 : 192,192,192
+
+[HitObjects]
+312,56,312,5,0,0:0:0:0:
+392,136,312,1,0,0:0:0:0:
+392,248,312,1,0,0:0:0:0:
+312,328,312,1,0,0:0:0:0:
+200,328,312,1,0,0:0:0:0:
+120,248,312,1,0,0:0:0:0:
+120,136,312,1,0,0:0:0:0:
+200,56,312,1,0,0:0:0:0:
+312,56,1632,6,0,L|312:0,24,50
+200,56,6906,5,0,0:0:0:0:
+312,56,6906,1,0,0:0:0:0:
+392,136,6906,1,0,0:0:0:0:
+312,56,8225,1,0,0:0:0:0:
+312,56,9544,1,0,0:0:0:0:
+312,56,10862,1,0,0:0:0:0:
+392,248,12180,6,0,L|448:248,8,50
+392,136,12180,2,0,L|448:136,8,50
+392,248,14653,1,0,0:0:0:0:
+392,136,14653,1,0,0:0:0:0:
+392,248,16137,1,0,0:0:0:0:
+312,328,16137,1,0,0:0:0:0:
+200,328,17456,6,0,L|200:384,8,50
+312,328,17456,2,0,L|312:384,8,50
+312,328,19928,1,0,0:0:0:0:
+200,328,19928,1,0,0:0:0:0:
+200,328,21412,1,0,0:0:0:0:
+120,248,21412,1,0,0:0:0:0:
+120,248,22730,6,0,L|64:248,8,50
+392,136,22730,2,0,L|448:136,8,50
+120,248,25203,1,0,0:0:0:0:
+392,136,25203,1,0,0:0:0:0:
+312,56,26686,1,0,0:0:0:0:
+120,136,26686,1,0,0:0:0:0:
+200,56,28004,6,0,L|200:0,8,50
+312,328,28004,2,0,L|312:384,8,50

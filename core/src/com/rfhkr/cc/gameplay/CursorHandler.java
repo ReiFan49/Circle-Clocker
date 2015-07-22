@@ -116,7 +116,7 @@ final class CursorHandler {
 			// Size 8, Cursor CROSS, At 4 (Hov. 1 3 5 7)
 			// Given State 1 5 7
 			// Must not touch 2 4 6 8
-			Byte[] getHover = new Byte[]{-1,-1,-1,-1};
+			Byte[] getHover = {-1,-1,-1,-1};
 			boolean[] stateHover = new boolean[stateCheck.length];
 			get(stateCheck.length,pos,cursor,getHover);
 			for(byte i:getHover) if(i>0) stateHover[--i]=true;
@@ -167,20 +167,20 @@ final class CursorHandler {
 				);
 			}
 		}
-		private static int min(boolean[] prevState, Pair<Mode,Byte> state) {
+		private static int min(int[] prevMoves, boolean[] prevState, Pair<Mode,Byte> state) {
 			final byte w = (byte)prevState.length;
 			@SuppressWarnings("unchecked")
 			final Pair<Mode,Byte>[] pConst = simpleSolve(-0.001f).toArray(new Pair[w]);
 			int[] moves = new int[w];
 			for(int i=0;i<w;i++)
-				moves[i] = prevState[i] ? moveCount(pConst[i],state) : 65535;
+				moves[i] = prevState[i] ? prevMoves[i]+moveCount(pConst[i],state) : 65535;
 			return min(moves);
 		}
 		/** try to solve in lowest possible number of moves */
 		public static void solve() {
 			movement.clear();
 
-			Float cprev,ctime;
+			Float ctime;
 			Iterator<Float> solcheck = input.keySet().iterator();
 			final int
 				// Steps
@@ -226,15 +226,13 @@ final class CursorHandler {
 					// Set as passable movement
 					moveOK[stepCount][i] = true;
 					// Set initial move count required
-					moveCount[stepCount][i] = min(moveOK[stepCount-1],p);
+					moveCount[stepCount][i] = min(moveCount[stepCount-1],moveOK[stepCount-1],p);
 					// Find first index that suspected as the lowest move required one
 					int nextMove = 0;
 					for(int j=1;j<w&&nextMove==0;j++)
-						nextMove = (moveOK[stepCount-1][j]&&moveCount(pConst[j],p)==moveCount[stepCount][i]) ? j : nextMove;
+						nextMove = (moveOK[stepCount-1][j]&&moveCount[stepCount][i]==moveCount[stepCount-1][j]+moveCount(pConst[j],p)) ? j : nextMove;
 					// Set predecessor
 					movePred[stepCount][i] = nextMove;
-					// Add the predecessor move counter to the current one
-					moveCount[stepCount][i] += moveCount[stepCount-1][nextMove];
 				}
 			}
 			int j = 0;
@@ -247,11 +245,24 @@ final class CursorHandler {
 				}
 				if(i==s-1)
 					for(int k=1;k<w;k++)
-						j = (Integer.compare(moveCount[i][j],moveCount[i][k])==1) ? k : j;
+						j = (Integer.compare(moveCount[i][j],moveCount[i][k])>=0) ? k : j;
 				else
 					j = movePred[i+1][j];
 				movement.put((Float)input.keySet().toArray()[i-1],pConst[ movePred[i][j] ]);
 			}
+			System.out.printf("Movement required to solve the chart \u001b[1;32m%4d\u001b[m unit(s)%n",
+				Arrays.stream(moveCount[s-1]).filter(x->x<65535).min().orElse(65535)
+			);
+			if (true)
+				return;
+			System.out.println("Move Count");
+			for(int i=0;i<s;i++)
+				System.out.println(Arrays.stream(moveCount[i])
+					.mapToObj(x -> x == 65535 ? "x" : String.valueOf(x)).collect(Collectors.joining("\t")));
+			System.out.println("Move Chart");
+			for(int i=0;i<s;i++)
+				System.out.println(Arrays.stream(movePred[i])
+					.mapToObj(x -> x == -128  ? "x" : String.valueOf(x)).collect(Collectors.joining("\t")));
 		}
 		private ChartSolver() {}
 	}
@@ -259,8 +270,7 @@ final class CursorHandler {
 	private CursorHandler() {}
 	// Driver
 	public static void main(String... argv) {
-		Byte[] b;
-		b = new Byte[]{-1,-1,-1,-1};
+		Byte[] b = {-1,-1,-1,-1};
 		Consumer<Byte[]> p = (ary)->
 			System.out.println(Arrays.stream(ary).map(Object::toString).collect(Collectors.joining(",")));
 		Stream.of(8,16).forEach((k)->

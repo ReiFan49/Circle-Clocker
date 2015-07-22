@@ -30,7 +30,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
-	public OsuFileReader parse(File file) {
+	public OsuFileReader parse(@NotNull File file) {
 		try (BufferedReader f = new BufferedReader(new FileReader(file))) {
 			String str; Object obj = null;
 			RAWOsuBeatmap bm = new RAWOsuBeatmap();
@@ -42,6 +42,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 			} else {
 				System.out.printf("Parsing osu file format v%s%n",lm.group(1));
 			}
+			bm.cp = file.getPath();
 			while(Objects.nonNull(str = f.readLine()) /** EOF MARKER */) {
 				str = str.replaceAll("\n|\r\n?","");
 				if(Pattern.compile("^$").matcher(str).matches()) continue;
@@ -75,8 +76,8 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 					String[] astr; Object[] aobj;
 					astr = Pattern.compile(",").split(str);
 					aobj = new Object[astr.length];
-					aobj[0] = Float.valueOf(astr[0])/1000.0f; // OFFSET
-					aobj[1] = 60000/Double.valueOf(astr[1]); // BPM
+					aobj[0] = Float.valueOf(astr[0])/1000.0f;  // OFFSET
+					aobj[1] = 60000/Double.valueOf(astr[1]);   // BPM
 					aobj[2] = Byte.valueOf(astr[2]);           // BAR
 					aobj[3] = Byte.valueOf(astr[3]);           // SAMPLE TYPE
 					aobj[4] = Byte.valueOf(astr[4]);           // CUSTOM SAMPLE
@@ -160,7 +161,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 									}
 								aobj[6] = Short.valueOf(astr[6]);
 								aobj[7] = Double.valueOf(astr[7]);
-								double alen = (short)aobj[6] * (double)aobj[7] / ((float)bm.diff.get("SliderMultiplier")*100);
+								double alen = (short)aobj[6] * (double)aobj[7] / (Float.valueOf(bm.diff.get("SliderMultiplier").toString())*100);
 								end = Timing.shift(start,Timing.valueOf(alen));
 								bm.note.add(new Note(NoteType.NOTE_LONG,pos,start,end));
 								break;
@@ -185,6 +186,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 						break;
 					case Difficulty:
 						bm.diff.put(lm.group(1),obj);
+						break;
 					case Events:
 						bm.bg = obj.toString();
 						break;
@@ -208,6 +210,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 		public final Map<String,String> meta = new TreeMap<>();
 		public final Map<String,Object> diff = new TreeMap<>();
 		public String bg;
+		public String cp;
 		public final Timingset timing = new Timingset();
 		public final List<Twin<Integer>> posMap = new LinkedList<>();
 		public final Set<Note> note = new TreeSet<>(Note::compareTo);
@@ -240,9 +243,10 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 				.setSeries(meta.get("Source"))
 				.setTimingSet(timing);
 			/** Assign data to chartset **/
-			Chartset.designate(metadata,ch)
+			Chartset cs = Chartset.designate(metadata,ch)
 				.setSongName((String)general.get("AudioFilename"))
-				.setSongBG(bg);
+				.setSongBG(bg)
+				.setPath(PathResolver.from(cp).rep(""));
 			return ch;
 		}
 	}
@@ -253,10 +257,16 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 		OsuFileReader pars = new OsuFileReader();
 		PathResolver  nova = PathResolver.at("Hiro - VERTeX (Rei Hakurei) [Sample 08].osu")
 			.build("resources","Charts","Hiro (maimai) - VERTeX");
-		/** use arpg style to retain any files that next to the designated &lt;nova&gt; file */
+		/** use arpg style to retain any files that next to the designated <nova> file */
 		@NotNull
 		Path          arpg = (new File(nova.resolve())).toPath().getParent().toAbsolutePath();
 		pars.parse(nova);
+		Chartset.cache.forEach(System.out::println);
+		try {
+			Chartset.detect("resources\\Charts");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		Chartset.cache.forEach(System.out::println);
 	}
 }

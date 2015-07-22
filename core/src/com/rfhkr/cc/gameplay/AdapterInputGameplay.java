@@ -27,7 +27,7 @@ public class AdapterInputGameplay extends AbstractInputAdapter {
 	{
 		funcTouchDown = (x,y,p,b)-> {
 			CursorHandler.type(CursorHandler.type()==SPREAD ? CROSSED : SPREAD);
-			return false;
+			return true;
 		};
 	}
 	// Constructors

@@ -1,6 +1,10 @@
 package com.rfhkr.cc.level;
 
+import com.badlogic.gdx.tools.*;
 import com.badlogic.gdx.utils.*;
+import com.rfhkr.cc.errors.*;
+import com.rfhkr.cc.io.*;
+import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
 import java.io.*;
@@ -13,7 +17,9 @@ import java.util.*;
 public final class Chartset implements Serializable {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	public final static Set<Chartset> cache = new TreeSet<>(Chartset::compareSeries);
+	private static final long serialVersionUID = 0x1f2e_3d4c_5b6a_7988L;
+	private static final ChartDetector fpdircg = new ChartDetector();
+	public static final transient Set<Chartset> cache = new TreeSet<>(Chartset::compareSeries);
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -30,17 +36,34 @@ public final class Chartset implements Serializable {
 			target.addDifficulty(diff);
 		return target;
 	}
+	public static Chartset find(Chart diff) {
+		return cache.stream().filter((cs)->
+				cs.getDifficulties().contains(diff,true)
+		).findFirst().orElse(null);
+	}
+	public static void detect(String dir) {
+		cache.clear();
+		String p = PathResolver.from(dir).resolve();
+		try {
+			fpdircg.process(p,null);
+		} catch (Exception e) {
+			throw ReiException.invoke(e);
+		}
+	}
 	public static Chartset saveSetToFile(@NotNull Chartset cs, String fn) {
+		// TODO: how to export and import chart
 		return null;
 	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
+	private transient PathResolver chartPath;
 	private String       chartSong;
 	private String       chartBG;
 	private Array<Chart> difficulties = new Array<>(1);
 	private Metadata     chartData = new Metadata();
 	// ** ACCESSORS
+	public PathResolver getPath() { return chartPath; }
 	public String       getSongName() {
 		return chartSong; // .path();
 	}
@@ -55,6 +78,10 @@ public final class Chartset implements Serializable {
 	}
 	public Metadata     getMetadata() {
 		return chartData;
+	}
+	public Chartset     setPath(PathResolver p) {
+		chartPath = p;
+		return this;
 	}
 	public Chartset     setSongName(String fn) {
 		chartSong = fn; // Gdx.files.internal(PathResolver.at(fn).toString());
@@ -105,6 +132,9 @@ public final class Chartset implements Serializable {
 		);
 	}
 	// ** METHODS
+	public Pair<Metadata,Array<Chart>> toSingleCharts() {
+		return Pair.gen(getMetadata(),difficulties);
+	}
 	public String toString() {
 		return String.format(
 			"Chartset@%s ==> %s - %s%n" +
@@ -113,7 +143,24 @@ public final class Chartset implements Serializable {
 			difficulties
 		);
 	}
+	protected void finalize() throws Throwable {
+		super.finalize();
+		System.out.println("Put CS@"+super.hashCode()+" in trash.");
+	}
 	// <<END>> Instance Structure
+	// Nested Class
+	static class ChartDetector extends FileProcessor {
+		static final OsuFileReader frd1 = new OsuFileReader();
+		ChartDetector() {
+			addInputSuffix(".osu");
+		}
+		protected void processFile(Entry entry) throws Exception {
+			String fn = entry.inputFile.getPath();
+			if( fn.endsWith(".osu") )
+				frd1.parse(fn);
+			addProcessedFile(entry);
+		}
+	}
 	// Constructors
 	{
 		cache.add(this);

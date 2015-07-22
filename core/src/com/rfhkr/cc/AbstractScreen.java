@@ -15,7 +15,7 @@ import java.util.*;
 public abstract class AbstractScreen implements Screen {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	private static final Stack<AbstractScreen> requests = new Stack<>();
+	private static transient final Stack<AbstractScreen> requests = new Stack<>();
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -23,7 +23,7 @@ public abstract class AbstractScreen implements Screen {
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
-	protected final CCMain       gRef;
+	protected transient final CCMain       gRef;
 	protected InputProcessor     UIProcessor;
 	protected OrthographicCamera cam;
 	protected Array<AbstractInteract> obj;

@@ -10,7 +10,7 @@ import java.util.*;
  * @author Rei_Fan49
  * @since 2015/06/04
  */
-public final class Chart implements Comparable<Chart>{
+public final class Chart implements Comparable<Chart> {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	// ** ACCESSORS
@@ -29,8 +29,8 @@ public final class Chart implements Comparable<Chart>{
 	private Pair<DiffType,String> diffName;
 	private String diffCharter;
 	private boolean diff16Hit = false;
-	private Map<Timing,String> animTitle = new TreeMap<>(Timing::compare);
-	private Map<Timing,String> animMsg   = new TreeMap<>(Timing::compare);
+	public final Map<Timing,String> animTitle = new TreeMap<>(Timing::compare);
+	public final Map<Timing,String> animMsg   = new TreeMap<>(Timing::compare);
 	public final Array<Note> chart = new Array<>(1);
 	// ** ACCESSORS
 	public byte getDiffLevel() {
@@ -45,8 +45,6 @@ public final class Chart implements Comparable<Chart>{
 		else
 			return diffName.getX().name();
 	}
-	public Map<Timing,String> getAnimatedTitle() { return Collections.unmodifiableMap(animTitle); }
-	public Map<Timing,String> getAnimatedMessage() { return Collections.unmodifiableMap(animMsg); }
 	public int getMode() {
 		return diff16Hit ? 16 : 8; /*(diffName.getX() == DiffType.CUSTOM ?
 			diff16Hit : (diffName.getX().ordinal() > 1)
@@ -67,18 +65,35 @@ public final class Chart implements Comparable<Chart>{
 	public Chart setDiffName(@Nullable String name) { this.diffName.setSecond(name); return this; }
 	// ** PREDICATES
 	// ** INTERACTIONS
-	public int compareTo(Chart other) { return compare(this,other); }
+	public int compareTo(@Nullable Chart other) { return compare(this,other); }
 	// ** METHODS
 	// <<END>> Instance Structure
 	// Nested Classes
 	public enum DiffType {
-		CUSTOM, SIMPLE, BASIC, GENERIC, COMPLEX, ULTIMATE;
+		CUSTOM  (),
+		SIMPLE  ('S','M'),
+		BASIC   ('B','S'),
+		GENERIC ('G','N'),
+		COMPLEX ('C','P'),
+		ULTIMATE('U','L');
+		public final char[] abbr;
 		public static DiffType determine(String s) {
-			try { return valueOf(s); }
-			catch (IllegalArgumentException e) { return CUSTOM; }
+			try { return valueOf(s); } catch (IllegalArgumentException e) { return CUSTOM; }
+		}
+		DiffType (@Nullable char... abbr) {
+			this.abbr = abbr;
 		}
 	}
-	public enum NoteType { NOTE_NULL, NOTE_NORM, NOTE_LONG, NOTE_SLDE }
+	public enum NoteType {
+		NOTE_NULL(0),
+		NOTE_NORM(1),
+		NOTE_LONG(2),
+		NOTE_SLDE(3);
+		public final float scoreMult;
+		NoteType (float mult) {
+			this.scoreMult = mult;
+		}
+	}
 
 	// Constructors
 	public Chart(DiffType cd,String charter,byte lv) {

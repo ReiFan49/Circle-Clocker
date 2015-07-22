@@ -2,6 +2,7 @@ package com.rfhkr.util;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.*;
 import java.util.stream.*;
 
 /**
@@ -17,6 +18,10 @@ public class PathResolver {
 	// ** METHODS
 	public static PathResolver at(String fn) { return new PathResolver(fn); }
 	public static PathResolver at(File fn)   { return new PathResolver(fn.getAbsolutePath()); }
+	public static PathResolver from(String cp) {
+		String[] buff = cp.split(File.separator+File.separator);
+		return PathResolver.at(buff[buff.length-1]).build(Arrays.copyOf(buff,buff.length-1));
+	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
@@ -31,6 +36,7 @@ public class PathResolver {
 		constructable[builder.length] = fileName;
 		return constructable;
 	}
+	public PathResolver rep(String fn) { this.fileName = fn; return this; }
 	public PathResolver build(String... builder) { this.builder=builder; return this; }
 	public String resolve() {
 		return Arrays.stream(resolveAll())

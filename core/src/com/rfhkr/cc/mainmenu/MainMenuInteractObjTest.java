@@ -28,7 +28,7 @@ class MainMenuInteractObjTest<C extends Shape2D> extends AbstractInteract<C> {
 	public void dispose() {}
 	public void onTouchDown(float dx,float dy) {
 		System.out.printf("touch IN %+f %+f%n",dx,dy);
-		((AbstractScreen)gRef.getScreen()).requestNewScreen(new Gameplay(gRef,AdapterInputGameplay.class));
+		((AbstractScreen)gRef.getScreen()).requestNewScreen(new Gameplay(gRef,AdapterInputGameplay.class,ScreenMainMenu.chartGet().get2nd()));
 	}
 	public void onTouchHold(float dx,float dy) { System.out.printf("touch ON %+f %+f%n",dx,dy); }
 	public void onTouchUp  (float dx,float dy) { System.out.printf("touch NG %+f %+f%n",dx,dy); }

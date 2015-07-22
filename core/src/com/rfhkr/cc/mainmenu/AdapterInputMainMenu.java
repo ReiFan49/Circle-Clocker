@@ -27,21 +27,30 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 	{
 		funcKeyDown = (x) -> {
 			switch(x) {
-				case 19: case 22:
+				case 19:
 					Gameplay.setup.approachSucc();
 					break;
-				case 20: case 21:
+				case 20:
 					Gameplay.setup.approachPred();
+					break;
+				case 21:
+					ScreenMainMenu.chartPrev();
+					break;
+				case 22:
+					ScreenMainMenu.chartNext();
+					break;
+				case 29:
+					Gameplay.autoplay = !Gameplay.autoplay;
 					break;
 				case 66:
 					((AbstractScreen)CCMain.me().getScreen()).requestNewScreen(
-						new Gameplay(CCMain.me(),AdapterInputGameplay.class)
+						new Gameplay(CCMain.me(),AdapterInputGameplay.class,ScreenMainMenu.chartGet().get2nd())
 					);
 					break;
 				default:
 					System.out.println(x);
 			}
-			return false;
+			return true;
 		};
 	}
 	// Driver

@@ -4,8 +4,14 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
+import com.rfhkr.cc.level.*;
+import com.rfhkr.util.*;
+
+import java.util.*;
+import java.util.stream.*;
 
 /**
  * @author Rei_Fan49
@@ -14,10 +20,29 @@ import com.rfhkr.cc.gameplay.*;
 public class ScreenMainMenu extends AbstractScreen {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
+	private static final Map<Metadata,Array<Chart>> chartList = new HashMap<>(16);
+	private static int chartId = 0;
+	private static Chart[] chary = {};
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
+	public static void chartNext() {
+		chartId = (chartId+1) % chary.length;
+	}
+	public static void chartPrev() {
+		while (chartId<=0)
+			chartId += chary.length;
+		chartId--;
+	}
+	public static Pair<Metadata,Chart> chartGet() {
+		List<Chart> c = Arrays.asList(chary);
+		Chart cx = c.get(chartId);
+		Metadata mx = chartList.keySet().stream().filter((x)->
+				chartList.get(x).contains(cx,true)
+		).findAny().orElse(null);
+		return Pair.gen(mx,cx);
+	}
 	// <<END>> Class Structure
 	// <BEGIN> Instance Structure
 	// ** PROPERTIES
@@ -38,6 +63,15 @@ public class ScreenMainMenu extends AbstractScreen {
 		super.render(delta);
 	}
 	public void show   () {
+		chartList.clear();
+		Chartset.cache.stream().map(x->x.toSingleCharts()).forEach(x->chartList.put(x.getX(),x.getY()));
+		System.out.println("Chart List:");
+		//chartList.keySet().forEach((k) ->
+		//		chartList.get(k).forEach((v) ->
+		//				System.out.printf("%s - %s [%s]%n",k.getComposer(),k.getTitle(),v.getDiffName())
+		//		)
+		//);
+		chary = chartList.keySet().stream().flatMap(k->Stream.of(chartList.get(k).toArray())).toArray(Chart[]::new);
 	}
 	public void hide   () {
 	}
@@ -64,10 +98,19 @@ public class ScreenMainMenu extends AbstractScreen {
 				Math.round(Gameplay.setup.getApproachTime() * 60),
 				Math.round(Gameplay.setup.getApproachTime() * 1000)
 			) ,
-			100, 112, 600, 1, false);
+			100, 108, 600, 1, false);
 		gRef.font.getDefault().draw(batch,
-			"Press ENTER to play\n" +
-			"Press D-key to adjust guide speed" ,
+			"\r\nPress ENTER to play\r\n" +
+			"Press Up/Down to adjust guide speed\r\n" +
+			"Press Left/Right to switch song\r\n\r\n" +
+			String.format("Press A toggle %s AUTOPLAY mode%n%n", Gameplay.autoplay ? "Remove" : "Set" ) +
+			String.format("Chart Name:%n%s - %s [%s <%02d|Lv %02d>]%n",
+				chartGet().get1st().getComposer(),
+				chartGet().get1st().getTitle(),
+				chartGet().get2nd().getDiffName(),
+				chartGet().get2nd().getMode(),
+				chartGet().get2nd().getDiffLevel()
+			),
 			100, 128, 600, 1, false);
 		for(AbstractInteract o : obj)
 			o.draw(batch);
@@ -81,6 +124,7 @@ public class ScreenMainMenu extends AbstractScreen {
 	public ScreenMainMenu(final CCMain gRef,Class<? extends InputProcessor> inputClass) {
 		super(gRef,inputClass);
 		obj.add(new MainMenuInteractObjTest<>(gRef,200,200,new Rectangle(0,0,32,32)));
+		Chartset.detect("resources\\Charts");
 	}
 	// Driver
 }
