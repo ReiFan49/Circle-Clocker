@@ -4,7 +4,7 @@ package com.rfhkr.cc.gameplay;
  * @author Rei_Fan49
  * @since 2015/06/08
  */
-enum Judgement {
+public enum Judgement {
 	// Enumeration List
 	/** marks a judgement as   MISS  and does not give a score */
 	MISS  (Float.POSITIVE_INFINITY,0.300f,0,false),

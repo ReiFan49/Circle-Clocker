@@ -1,6 +1,7 @@
 package com.rfhkr.cc.gameplay;
 
 import com.rfhkr.cc.*;
+import com.rfhkr.cc.gameplay.result.*;
 
 import static com.rfhkr.cc.gameplay.CursorHandler.Mode.*;
 
@@ -12,6 +13,7 @@ public class AdapterInputGameplay extends AbstractInputAdapter {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	public static boolean verbose = false;
+	public static final AdapterInputGameplay self = new AdapterInputGameplay();
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -24,12 +26,12 @@ public class AdapterInputGameplay extends AbstractInputAdapter {
 	// ** INTERACTIONS
 	// ** METHODS
 	// <<END>> Instance Structure
-	{
+	// Constructors
+	private AdapterInputGameplay() {
 		funcTouchDown = (x,y,p,b)-> {
 			CursorHandler.type(CursorHandler.type()==SPREAD ? CROSSED : SPREAD);
 			return true;
 		};
 	}
-	// Constructors
 	// Driver
 }

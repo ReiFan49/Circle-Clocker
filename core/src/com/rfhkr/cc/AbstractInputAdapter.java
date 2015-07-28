@@ -13,6 +13,7 @@ import java.util.stream.*;
 public abstract class AbstractInputAdapter extends InputAdapter {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
+	public static final AbstractInputAdapter self = null;
 	public static boolean verbose = false;
 	// ** ACCESSORS
 	// ** PREDICATES
@@ -53,5 +54,6 @@ public abstract class AbstractInputAdapter extends InputAdapter {
 	}
 	// <<END>> Instance Structure
 	// Constructors
+	protected AbstractInputAdapter() {}
 	// Driver
 }

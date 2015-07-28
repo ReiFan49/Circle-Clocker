@@ -3,6 +3,7 @@ package com.rfhkr.cc.level;
 import com.badlogic.gdx.tools.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.errors.*;
+import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.io.*;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
@@ -14,12 +15,12 @@ import java.util.*;
  * @author Rei_Fan49
  * @since 2015/06/04
  */
-public final class Chartset implements Serializable {
+public final class Chartset implements Serializable, Comparable<Chartset> {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	private static final long serialVersionUID = 0x1f2e_3d4c_5b6a_7988L;
 	private static final ChartDetector fpdircg = new ChartDetector();
-	public static final transient Set<Chartset> cache = new TreeSet<>(Chartset::compareSeries);
+	public static final transient Set<Chartset> cache = new TreeSet<>(Chartset::compareTo);
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -32,8 +33,9 @@ public final class Chartset implements Serializable {
 			System.out.printf("Found chartset %s with specified metadata.%n",target);
 		else
 			if (Objects.isNull(target))
-				target = (new Chartset()).setMetadata(data);
+				target = new Chartset(data);
 			target.addDifficulty(diff);
+		Highscore.get().getScores(diff);
 		return target;
 	}
 	public static Chartset find(Chart diff) {
@@ -43,6 +45,8 @@ public final class Chartset implements Serializable {
 	}
 	public static void detect(String dir) {
 		cache.clear();
+		Highscore.get().clearScores();
+		System.runFinalization();
 		String p = PathResolver.from(dir).resolve();
 		try {
 			fpdircg.process(p,null);
@@ -102,27 +106,8 @@ public final class Chartset implements Serializable {
 	}
 	// ** PREDICATES
 	// ** INTERACTIONS
-	public int compareArtist(Chartset other) {
-		if (this.chartData.isInstrumental() && other.chartData.isInstrumental())
-			return this.chartData.getComposer().compareToIgnoreCase(other.chartData.getComposer());
-		else if (this.chartData.isInstrumental()) return -1;
-		else if (other.chartData.isInstrumental()) return +1;
-		else return this.chartData.getVocalist().compareToIgnoreCase(other.chartData.getVocalist());
-	}
-	public int compareTitle(Chartset other) {
-		return this.chartData.getTitle().compareToIgnoreCase(other.chartData.getTitle());
-	}
-	public int compareCircle(Chartset other) {
-		if (this.chartData.getGroup()==null) return +1;
-		else if (other.chartData.getGroup()==null) return -1;
-		else
-			return this.chartData.getGroup().compareToIgnoreCase(other.chartData.getGroup());
-	}
-	public int compareSeries(Chartset other) {
-		if (this.chartData.getSeries()==null) return -1;
-		else if (other.chartData.getSeries()==null) return +1;
-		else
-			return this.chartData.getSeries().compareToIgnoreCase(other.chartData.getSeries());
+	public int compareTo(Chartset other) {
+		return Metadata.comparator.compare(this.chartData,other.chartData);
 	}
 	public boolean equals(Chartset other) {
 		return (
@@ -137,7 +122,7 @@ public final class Chartset implements Serializable {
 	}
 	public String toString() {
 		return String.format(
-			"Chartset@%s ==> %s - %s%n" +
+			"Chartset@%s ==> %s - %s " +
 				"%s", Integer.toHexString(this.hashCode()),
 			chartData.isInstrumental() ? chartData.getVocalist() : chartData.getComposer(),chartData.getTitle(),
 			difficulties
@@ -145,7 +130,7 @@ public final class Chartset implements Serializable {
 	}
 	protected void finalize() throws Throwable {
 		super.finalize();
-		System.out.println("Put CS@"+super.hashCode()+" in trash.");
+		System.out.printf("Put CS@%8s in GC.%n",Integer.toHexString(super.hashCode()));
 	}
 	// <<END>> Instance Structure
 	// Nested Class
@@ -162,7 +147,15 @@ public final class Chartset implements Serializable {
 		}
 	}
 	// Constructors
-	{
+	public Chartset() {
+		cache.add(this);
+	}
+	public Chartset(Metadata data) {
+		setMetadata(data); cache.add(this);
+	}
+	public Chartset(Metadata data,Chart... diff) {
+		setMetadata(data);
+		difficulties = Array.with(diff);
 		cache.add(this);
 	}
 	// Driver

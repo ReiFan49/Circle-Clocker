@@ -23,6 +23,9 @@ public class CCMain extends Game {
 	public final InputMultiplexer inputHandler = new InputMultiplexer();
 	public final AssetManager     assets       = new AssetManager();
 	// - Accessors
+	public AbstractScreen getScreen() {
+		return AbstractScreen.class.cast(super.getScreen());
+	}
 	public Twin<Integer> getSize() { return size; }
 	// - Predicates
 	// - Interactions
@@ -32,7 +35,7 @@ public class CCMain extends Game {
 		font  = new BitmapFonts();
 		size  = Twin.set(1,1);
 		Gdx.input.setInputProcessor(inputHandler);
-		this.setScreen(new ScreenMainMenu(this, AdapterInputMainMenu.class));
+		this.setScreen(AbstractScreen.request(ScreenMainMenu.class));
 	}
 	public void dispose() {
 		super.dispose();

@@ -2,6 +2,8 @@ package com.rfhkr.cc.mainmenu;
 
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
+import com.rfhkr.cc.level.*;
+import javafx.stage.*;
 
 /**
  * @author Rei_Fan49
@@ -11,6 +13,7 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	public static boolean verbose = false;
+	public static final AdapterInputMainMenu self = new AdapterInputMainMenu();
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -24,7 +27,7 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 	// ** METHODS
 	// <<END>> Instance Structure
 	// Constructors
-	{
+	private AdapterInputMainMenu() {
 		funcKeyDown = (x) -> {
 			switch(x) {
 				case 19:
@@ -42,10 +45,15 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 				case 29:
 					Gameplay.autoplay = !Gameplay.autoplay;
 					break;
+				case 46:
+					Chartset.detect("resources\\Charts");
+					CCMain.me().getScreen().show();
+					break;
+				case 76:
+					ScreenMainMenu.nextScore();
+					break;
 				case 66:
-					((AbstractScreen)CCMain.me().getScreen()).requestNewScreen(
-						new Gameplay(CCMain.me(),AdapterInputGameplay.class,ScreenMainMenu.chartGet().get2nd())
-					);
+					(CCMain.me().getScreen()).requestNewScreen(new Gameplay(ScreenMainMenu.chartGet().get2nd()));
 					break;
 				default:
 					System.out.println(x);

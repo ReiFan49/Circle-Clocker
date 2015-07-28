@@ -65,7 +65,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 							mt = Pattern.compile("\"(.+)\"").matcher(
 								str = Pattern.compile(",").split(f.readLine())[2]
 							);
-							System.out.println(obj = mt.matches() ? mt.group(1) : str);
+							obj = mt.matches() ? mt.group(1) : str;
 						} catch (Exception e) {
 							System.err.println("No background detected.");
 							continue;
@@ -173,7 +173,6 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 						System.err.printf("%s: %s%nRaw Object: %s%n",e.getClass(),e.getMessage(),str);
 					}
 				} else {
-					System.out.println(str);
 					continue;
 				}
 				if(tags==null) continue;
@@ -238,8 +237,8 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 			ch.chart.addAll(note.toArray(new Note[note.size()]));
 			/** Assign data to metadata **/
 			Metadata metadata = (new Metadata())
-				.setTitle(meta.get("Title"),meta.getOrDefault("TitleUnicode",""))
-				.setComposer(meta.get("Artist"),meta.getOrDefault("ArtistUnicode",""))
+				.setTitle(meta.get("Title"),meta.getOrDefault("TitleUnicode",null))
+				.setComposer(meta.get("Artist"),meta.getOrDefault("ArtistUnicode",null))
 				.setSeries(meta.get("Source"))
 				.setTimingSet(timing);
 			/** Assign data to chartset **/

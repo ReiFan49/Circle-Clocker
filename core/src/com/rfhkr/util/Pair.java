@@ -172,7 +172,7 @@ public class Pair<T,U> implements Iterable<Object>, Serializable {
 	}
 	/** turns the pair tuple into a twin
 	 *  @since  2015/04/08
-	 *  @throws Exception if the pair is not having a same type
+	 *  @throws IllegalArgumentException if the pair is not having a same type
 	 *  @return cloned tuple of the same element that refers this object
 	**/
 	@SuppressWarnings("unchecked")

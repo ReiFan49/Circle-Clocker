@@ -3,17 +3,20 @@ package com.rfhkr.cc.level;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
+import java.io.*;
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * handles chartset metadata
  * @author Rei_Fan49
  * @since 2015/06/04
  */
-public final class Metadata {
+public final class Metadata implements Serializable {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	public static boolean unicode = false;
+	public static Comparator<Metadata> comparator = Metadata::compareSeries;
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -52,12 +55,13 @@ public final class Metadata {
 	 */
 	private Twin<String> origin;
 	private Timingset timingPoints;
+	private String    genre;
 	// ** ACCESSORS
 	private boolean  unicodable(Pair<String,String> p) {
 		return unicode&&Objects.nonNull(p.get2nd());
 	}
 	private String   getPairResult(Pair<String,String> p) {
-		return p.getElemCond("",(a,b)->(unicodable(p)),null);
+		return p.getElemCond("",(a,b)->(!unicodable(p)),null);
 	}
 	public String getTitle() {
 		return getPairResult(songName);
@@ -82,6 +86,7 @@ public final class Metadata {
 	}
 	public Timingset getTimingSet() { return timingPoints; }
 	public float  getOffset() { return timingPoints.getFirstOffset(); }
+	public String getGenre() { return genre; }
 	public Map<Timing,BPMData> getTimingPoint() {
 		return timingPoints.getTimingTable();
 	}
@@ -112,6 +117,7 @@ public final class Metadata {
 	public Metadata setTimingSet(Timingset t) { timingPoints=t; return this; }
 	public Metadata setDesignatedCharacter(String chara) { origin.set1st(chara); return this; }
 	public Metadata setBaseArrangement(String baseArr) { origin.set2nd(baseArr); return this; }
+	public Metadata setGenre(String g) { genre = g; return this; }
 	// ** PREDICATES
 	public boolean isInstrumental() {
 		return Objects.isNull(vocalist);
@@ -137,7 +143,54 @@ public final class Metadata {
 		);
 	}
 	// ** INTERACTIONS
+	public int compareArtist(Metadata other) {
+		if (this.isInstrumental() && other.isInstrumental())
+			return this.getComposer().compareToIgnoreCase(other.getComposer());
+		else if (this.isInstrumental()) return -1;
+		else if (other.isInstrumental()) return +1;
+		else
+			return this.getVocalist().compareToIgnoreCase(other.getVocalist());
+	}
+	public int compareTitle(Metadata other) {
+		return this.getTitle().compareToIgnoreCase(other.getTitle());
+	}
+	public int compareCircle(Metadata other) {
+		if (this.getGroup()==null && other.getGroup()==null)
+			return 0;
+		else if (this.getGroup()==null) return +1;
+		else if (other.getGroup()==null) return -1;
+		else
+			return this.getGroup().compareToIgnoreCase(other.getGroup());
+	}
+	public int compareSeries(Metadata other) {
+		if (this.getSeries()==null && other.getSeries()==null)
+			return 0;
+		else if (this.getSeries()==null) return -1;
+		else if (other.getSeries()==null) return +1;
+		else
+			return this.getSeries().compareToIgnoreCase(other.getSeries());
+	}
 	// ** METHODS
+	public String getArtist() {
+		String[] a = {
+			getGroup(),
+			getVocalist(),
+			getComposer()
+		};
+		return Stream.of(a).filter(Objects::nonNull).filter(x ->x.length() > 0).findFirst().orElse(null);
+	}
+	public String toStandardFormat() {
+		if(getArtist()!=null && getTitle()!=null)
+			return String.format(
+				"%s - %s",
+				getArtist(),getTitle()
+			);
+		else {
+			System.out.println("Artist null? "+Objects.isNull(getArtist()));
+			System.out.println("Title  null? "+Objects.isNull(getTitle()));
+			return (getArtist() == null) ? getTitle() : getArtist();
+		}
+	}
 	public String toString() {
 		return String.format(
 			"Metadata@%s==>%n" +
@@ -165,6 +218,7 @@ public final class Metadata {
 		series   = Twin.set("",null);
 		origin   = Twin.set(null,null);
 		timingPoints = new Timingset();
+		genre    = "TEST SONG";
 	}
 	// Driver
 }

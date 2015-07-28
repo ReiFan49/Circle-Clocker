@@ -3,21 +3,26 @@ package com.rfhkr.cc.gameplay;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.Timer;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.errors.*;
+import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.io.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
+import net.dermetfan.gdx.physics.box2d.*;
 import sun.security.util.*;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
+import java.time.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
@@ -33,7 +38,9 @@ public class Gameplay extends AbstractScreen {
 	public static final Byte[] posBuff = {-1,-1,-1,-1};
 	public static final Setup setup = new Setup();
 	public static final Map<Integer,Array<Vector2>> posMap = new TreeMap<>();
+	private static boolean  firstRun = true;
 	private static long     calibratedBGM;
+	private static long     calibrateBack;
 	private static Timer    timer = new Timer();
 	private static Gameplay self;
 	private static Vector2  lastCachedSize = new Vector2();
@@ -125,6 +132,7 @@ public class Gameplay extends AbstractScreen {
 	private boolean[][]
 		buffState; // affects touchRls and touchHit
 	private Array<Judgement> lastJudge;
+	private float    lastNoteTime;
 	private Sound    noteTick;
 	private int      combo;
 	private Chartset selectedSet;
@@ -167,7 +175,7 @@ public class Gameplay extends AbstractScreen {
 	// ** METHODS
 	public void dispose() {
 		super.dispose();
-		sfx.forEach(Sound::dispose);
+		//sfx.forEach(Sound::dispose);
 		bg.getTexture().dispose();
 		if(hitZone!=null) {
 			hitZone.forEach(s -> s.getTexture().dispose());
@@ -177,7 +185,6 @@ public class Gameplay extends AbstractScreen {
 		noteTick.dispose();
 		for(AbstractInteract o : obj)
 			o.dispose();
-		now(null);
 		timer.clear();
 	}
 	public void render(float delta) {
@@ -212,15 +219,30 @@ public class Gameplay extends AbstractScreen {
 			timer.delay(Math.round(delta*1000));
 			Gdx.app.log("Timer",String.format("Added @%4dmsec",Math.round(delta * 1000)));
 		}
+
+		calibrateBack = calibratedBGM + Math.round(lastNoteTime * 1_000);
 		if(bgm.isPlaying()) {
-			long missRate = calibratedBGM - (System.nanoTime() - Math.round((double)bgm.getPosition() * 1_000_000_000L));
-			if(Math.abs(missRate) > 30_000_000L) {
+			long missRate;
+
+			// calibrate from front
+			missRate = calibratedBGM - (System.nanoTime() - Math.round((double)bgm.getPosition() * 1_000_000_000L));
+			if(Math.abs(missRate) > 5_000_000L) {
+				Gdx.app.log("TimerShift",String.format("BGM Miss %4dms",missRate / 1000000));
 				calibratedBGM -= missRate;
 				timer.delay(missRate / 1_000_000);
+			}
+
+			// calibrate from back
+			calibrateBack = calibratedBGM + Math.round(lastNoteTime * 1_000_000_000D);
+			missRate = (calibrateBack/1_000_000 - FinishHandle.self.getExecuteTimeMillis());
+			if(Math.abs(missRate) > 5L) {
+				Gdx.app.log("TimerShift",String.format("CRD Miss %4dms",missRate));
+				timer.delay(missRate);
 			}
 		} else {
 			calibratedBGM = System.nanoTime() + Math.round((double)bgm.getPosition() * 1_000_000_000L);
 		}
+
 		timeElapsed = (timeElapsed < 0) ? timeElapsed+delta : bgm.isPlaying() ? bgm.getPosition() : timeElapsed;
 		currentTiming = selectedSet.getMetadata().getTimingSet().approx(timeElapsed,256);
 		input(Gdx.input.getX(),Gdx.input.getY());
@@ -254,7 +276,7 @@ public class Gameplay extends AbstractScreen {
 				boolean hovered = Arrays.asList(posBuff).indexOf((byte)(i+1))>=0;
 				Color drawColor = batch.getColor();
 				drawColor.set(1.0f,1.0f,1.0f,1.0f);
-				drawColor.a = 1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f);
+				drawColor.a = (1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f))/10f;
 				switch(lastJudge.get(i)) {
 					case JUST:
 						drawColor.r *= 1.0;
@@ -278,7 +300,7 @@ public class Gameplay extends AbstractScreen {
 						break;
 				}
 				if (hovered)
-					drawColor.mul(1.0f,0.6f,1.0f,1.0f);
+					drawColor.mul(1.0f,0.6f,1.0f,5.0f);
 				batch.setColor(drawColor);
 				batch.draw(hitZone.get(i),
 					getCenterScreen().x,getCenterScreen().y - 256,
@@ -318,11 +340,12 @@ public class Gameplay extends AbstractScreen {
 				400,104,368, 0, false
 			);
 		gRef.font.getDefault().draw(batch,
-			String.format("Score %09d%n%s%n%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%n%nJudgement%n%s",
+			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%n%nJudgement%n%s",
 				gameResult.getTotalScore(),
 				gameResult.getScoreRef().entrySet().stream().map(x ->
 						String.format("%s: %4dpts",x.getKey(),x.getValue())
 				).collect(Collectors.joining("\n")),
+				Math.round(gameResult.getMaximumScore() * GameplayResult.Rank.BM.accReq / 100),
 				gameResult.getMaximumScore(),
 				gameResult.getAchievement(),
 				gameResult.getRank().rankStr,
@@ -333,6 +356,16 @@ public class Gameplay extends AbstractScreen {
 			400,128,368,0,false
 		);
 		gRef.font.getDefault().setColor(1.0f,1.0f,1.0f,1.0f);
+		gRef.font.getDefault().draw(batch,
+			String.format("[%d (%d-%d-%d) %d]",
+				calibratedBGM/1000000,
+				TimeUtils.nanosToMillis(TimeUtils.nanoTime()),
+				Math.abs(calibrateBack - calibratedBGM)/1000000,
+				calibrateBack/1000000,
+				FinishHandle.self.getExecuteTimeMillis()
+			),
+			720,560,80,0,false
+		);
 		gRef.font.getDefault().draw(batch,
 			String.format("%06.2f (%03d)fps (%07.3f%%)",
 				1 / delta,
@@ -411,9 +444,11 @@ public class Gameplay extends AbstractScreen {
 	// Nested Classes
 	public static final class Setup /* Struct */ {
 		// Class Properties
+		public final double GSMX = 10;
+		public final double GSSN = 13.3;
+		private final double powerRate = Math.log(Math.pow(4,0.25));
 		private int approach = 4;
 		private boolean plus = false;
-		private final double powerRate = Math.log(Math.pow(4,0.25));
 		// Class Accessors
 		public float approach() { return approach(approach,plus); }
 		public float approach(int GS) { return approach(GS,plus); }
@@ -427,9 +462,9 @@ public class Gameplay extends AbstractScreen {
 			if (!isSpeedSlug()) approach(approach - (plus ? 0 : 1),!plus);
 		}
 		public boolean isSpeedSlug() { return approach() <= 1 && (approach(1) == 1); }
-		public boolean isSpeedG2GF() { return approach() > 10; }
+		public boolean isSpeedG2GF() { return approach() > GSMX; }
 		public float getApproachTime() {
-			return getApproachTime(isSpeedG2GF() ? 13.3 : approach());
+			return getApproachTime(isSpeedG2GF() ? GSSN : approach());
 		}
 		private float getApproachTime(double approach) { return (float)Math.exp((5 - approach)*powerRate); }
 	}
@@ -523,14 +558,17 @@ public class Gameplay extends AbstractScreen {
 		}
 	}
 	private static final class FinishHandle extends Timer.Task {
+		private static final FinishHandle self = new FinishHandle();
 		public void run() {
-			self.bgm.stop();
-			//self.requestNewScreen(new GameResultScreen(self.gRef));
+			if(!autoplay)
+				Highscore.get().getScores(now().getChart()).add(now().gameResult);
+			now().bgm.stop();
+			now().requestNewScreen(ResultScreen.show(now().gameResult));
 		}
 	}
 	// Constructors
-	public Gameplay(final CCMain gRef, Class<? extends InputProcessor> inputClass,Chart selectedChart) {
-		super(gRef,inputClass);
+	public Gameplay(Chart selectedChart) {
+		super(AdapterInputGameplay.class);
 		now(this);
 		AutoInputHandle.moveCount = 0;
 		FileFormatReader<?> pars;
@@ -543,6 +581,10 @@ public class Gameplay extends AbstractScreen {
 		combo = 0;
 		timeElapsed = 0;
 		gameResult = GameplayResult.make(selectedSet.getDifficulties(chartIndex));
+		gameResult.setPlayTime(Instant.now())
+			.setRecordable(!autoplay)
+			.setPlayer("GUEST CLOCKER")
+			.setSpeed(setup.approach());
 		arpg = (new File(selectedSet.getPath().resolve())).toPath().toAbsolutePath();
 		System.out.println(arpg + "\\" + selectedSet.getSongBG());
 		try {
@@ -590,6 +632,7 @@ public class Gameplay extends AbstractScreen {
 		//System.out.println(earlyNote);
 		//System.out.println(isNoteFirst);
 		CursorHandler.type(CursorHandler.Mode.SPREAD);
+		CursorHandler.get(1,posBuff);
 		NoteBasic.approach = setup.getApproachTime();
 		calibratedBGM = System.nanoTime();
 		timer.postTask(new Timer.Task() {
@@ -607,7 +650,7 @@ public class Gameplay extends AbstractScreen {
 					timeElapsed - Timing.at(12).toFloat(currentTimings.earliest()),
 					(float)(60.0/currentTimings.earliest().getBPM())+calibrator.get(), 4
 				);
-				selectedSet.getDifficulties(chartIndex).chart.forEach(note -> {
+				selectedChart.chart.forEach(note -> {
 					timer.postTask(new NoteCreation(note));
 					timer.scheduleTask(
 						note.getType()==NoteType.NOTE_NORM ?
@@ -621,8 +664,13 @@ public class Gameplay extends AbstractScreen {
 						note.getType()==NoteType.NOTE_NORM ? 0 : 1
 					);
 				});
+				timer.scheduleTask(FinishHandle.self,
+					lastNoteTime = currentTimings.at(selectedChart.chart.peek().getEnd()) + 4.0f
+				);
 				timer.delay(Math.round(-timeElapsed * 1000));
-				timer.delay(111);
+				if(firstRun)
+					timer.delay(70);
+				firstRun&=false;
 				timer.scheduleTask(BGMCalibrator.self,-timeElapsed+calibrator.get());
 				//timer.delay((timerOffset - solveTime) * 2);
 				//timer.delay(solveTime - System.nanoTime() / 1000000);

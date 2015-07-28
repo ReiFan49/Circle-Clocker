@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
+import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.util.*;
 
@@ -20,9 +21,10 @@ import java.util.stream.*;
 public class ScreenMainMenu extends AbstractScreen {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	private static final Map<Metadata,Array<Chart>> chartList = new HashMap<>(16);
+	private static final Map<Metadata,Array<Chart>> chartList = new TreeMap<>(Metadata.comparator);
 	private static int chartId = 0;
 	private static Chart[] chary = {};
+	private static int hsPage = 1;
 	// ** ACCESSORS
 	// ** PREDICATES
 	// ** INTERACTIONS
@@ -34,6 +36,9 @@ public class ScreenMainMenu extends AbstractScreen {
 		while (chartId<=0)
 			chartId += chary.length;
 		chartId--;
+	}
+	public static void nextScore() {
+		hsPage = (hsPage % (int)Math.ceil(Highscore.get().getScores(chary[chartId]).size()/5D)) + 1;
 	}
 	public static Pair<Metadata,Chart> chartGet() {
 		List<Chart> c = Arrays.asList(chary);
@@ -64,13 +69,14 @@ public class ScreenMainMenu extends AbstractScreen {
 	}
 	public void show   () {
 		chartList.clear();
-		Chartset.cache.stream().map(x->x.toSingleCharts()).forEach(x->chartList.put(x.getX(),x.getY()));
-		System.out.println("Chart List:");
-		//chartList.keySet().forEach((k) ->
-		//		chartList.get(k).forEach((v) ->
-		//				System.out.printf("%s - %s [%s]%n",k.getComposer(),k.getTitle(),v.getDiffName())
-		//		)
-		//);
+		Chartset.cache.stream().map(Chartset::toSingleCharts).forEach(x -> chartList.put(x.getX(),x.getY()));
+		if(false)
+			System.out.println("Chart List:");
+			chartList.keySet().forEach((k) ->
+				chartList.get(k).forEach((v) ->
+					System.out.printf("%s - %s [%s-%02d Lv%02d]%n",k.getComposer(),k.getTitle(),v.getDiffName(),v.getMode(),v.getDiffLevel())
+				)
+			);
 		chary = chartList.keySet().stream().flatMap(k->Stream.of(chartList.get(k).toArray())).toArray(Chart[]::new);
 	}
 	public void hide   () {
@@ -92,24 +98,31 @@ public class ScreenMainMenu extends AbstractScreen {
 		batch.begin();
 
 		gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
+
+		if(Gameplay.setup.isSpeedG2GF())
+			gRef.font.getDefault().setColor(1,0.6f,0.2f,1);
 		gRef.font.getDefault().draw(batch,
-			String.format("GS%s (%2dframes/%4dms)",
+			String.format("GS%s (%2dframes/%4dms)%s",
 				Gameplay.setup.isSpeedG2GF() ? "SONIC" : String.format("%1.1f",Gameplay.setup.approach()),
 				Math.round(Gameplay.setup.getApproachTime() * 60),
-				Math.round(Gameplay.setup.getApproachTime() * 1000)
+				Math.round(Gameplay.setup.getApproachTime() * 1000),
+				Gameplay.setup.isSpeedG2GF() ? "\n"+Judgement.JUST+" automatically awarded for every "+Judgement.EXCEL+"s get." : ""
 			) ,
 			100, 108, 600, 1, false);
+		gRef.font.getDefault().setColor(1,1,1,1);
+
 		gRef.font.getDefault().draw(batch,
 			"\r\nPress ENTER to play\r\n" +
-			"Press Up/Down to adjust guide speed\r\n" +
-			"Press Left/Right to switch song\r\n\r\n" +
-			String.format("Press A toggle %s AUTOPLAY mode%n%n", Gameplay.autoplay ? "Remove" : "Set" ) +
-			String.format("Chart Name:%n%s - %s [%s <%02d|Lv %02d>]%n",
-				chartGet().get1st().getComposer(),
-				chartGet().get1st().getTitle(),
-				chartGet().get2nd().getDiffName(),
-				chartGet().get2nd().getMode(),
-				chartGet().get2nd().getDiffLevel()
+				"Press Up/Down to adjust guide speed\r\n" +
+				"Press Left/Right to switch song\r\n\r\n" +
+				String.format("Press A toggle %s AUTOPLAY mode%n%n",Gameplay.autoplay ? "Remove" : "Set") +
+				String.format("Chart Name:%n%s (from %s) [%s <%02d|Lv %02d>]%n%nHighscore:%n%s",
+					chartGet().get1st().toStandardFormat(),
+					chartGet().get1st().getSeries(),
+					chartGet().get2nd().getDiffName(),
+					chartGet().get2nd().getMode(),
+					chartGet().get2nd().getDiffLevel(),
+					Highscore.get().showPage(chartGet().get2nd(),hsPage,5,true)
 			),
 			100, 128, 600, 1, false);
 		for(AbstractInteract o : obj)
@@ -121,8 +134,8 @@ public class ScreenMainMenu extends AbstractScreen {
 	}
 	// <<END>> Instance Structure
 	// Constructors
-	public ScreenMainMenu(final CCMain gRef,Class<? extends InputProcessor> inputClass) {
-		super(gRef,inputClass);
+	public ScreenMainMenu() {
+		super(AdapterInputMainMenu.class);
 		obj.add(new MainMenuInteractObjTest<>(gRef,200,200,new Rectangle(0,0,32,32)));
 		Chartset.detect("resources\\Charts");
 	}

@@ -5,6 +5,7 @@ import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * @author Rei_Fan49
@@ -17,9 +18,20 @@ public final class Chart implements Comparable<Chart> {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	public static int compare(Chart c1,Chart c2) {
-		if(Objects.isNull(c1) || c1.diffName.get1st() == DiffType.CUSTOM) return -1;
-		if(Objects.isNull(c2) || c2.diffName.get1st() == DiffType.CUSTOM) return +1;
-		return c1.diffName.get1st().compareTo(c2.diffName.get1st());
+		if(Objects.isNull(c1)) return -1;
+		if(Objects.isNull(c2)) return +1;
+		int cp[] = {
+			c1.getDiffType().compareTo(c2.getDiffType()),
+			c1.getDiffName().compareToIgnoreCase(c2.getDiffName()),
+			c1.diffCharter.compareToIgnoreCase(c2.diffCharter),
+			Byte.compare(c1.diffLevel,c2.diffLevel),
+			Boolean.compare(c1.diff16Hit,c2.diff16Hit),
+			Integer.compare(c1.hashCode(),c2.hashCode())
+		}, ci = 0, cv;
+		do {
+			cv = cp[ci++];
+		} while(cv==0 && ci < cp.length);
+		return cv;
 	}
 	// ** METHODS
 	// <<END>> Class Structure
@@ -67,6 +79,15 @@ public final class Chart implements Comparable<Chart> {
 	// ** INTERACTIONS
 	public int compareTo(@Nullable Chart other) { return compare(this,other); }
 	// ** METHODS
+	protected void finalize() throws Throwable {
+		super.finalize();
+		System.out.printf("Put DF@%8s in GC.%n",Integer.toHexString(super.hashCode()));
+	}
+	public int hashCode() {
+		int prevCalcHash = Stream.of(getDiffName(),getDiffCharter(),getDiffLevel(),getMode())
+			.reduce(0,(p,c) -> p ^ c.hashCode(),(p,c) -> p + c);
+		return Stream.of(chart.toArray()).reduce(prevCalcHash,(pre,cur) -> pre ^ cur.hashCode(),(a,b)->a+b);
+	}
 	// <<END>> Instance Structure
 	// Nested Classes
 	public enum DiffType {
@@ -94,7 +115,6 @@ public final class Chart implements Comparable<Chart> {
 			this.scoreMult = mult;
 		}
 	}
-
 	// Constructors
 	public Chart(DiffType cd,String charter,byte lv) {
 		this.diffName = Pair.gen(cd, null);

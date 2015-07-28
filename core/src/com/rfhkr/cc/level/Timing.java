@@ -137,10 +137,10 @@ public class Timing implements Comparable<Timing>{
 	/** divisor and dividend */
 	private byte dv,dd;
 	// ** ACCESSORS
-	private int getQuotient()  { return b;  }
+	public int getQuotient()  { return b;  }
+	public int getRemainder() { return dv; }
+	public int getDivisor()   { return dd; }
 	private Twin<Integer> getRational() { return Twin.set(b*dd+dv,0+dd); }
-	private int getRemainder() { return dv; }
-	private int getDivisor()   { return dd; }
 	// ** PREDICATES
 	// ** INTERACTIONS
 	public int    compareTo(@Nullable Timing other) {
