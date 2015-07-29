@@ -97,11 +97,11 @@ public class ScreenMainMenu extends AbstractScreen {
 	public void processStepDraw(float delta,SpriteBatch batch) {
 		batch.begin();
 
-		gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
+		gRef.font.getCurrent().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
 
 		if(Gameplay.setup.isSpeedG2GF())
-			gRef.font.getDefault().setColor(1,0.6f,0.2f,1);
-		gRef.font.getDefault().draw(batch,
+			gRef.font.getCurrent().setColor(1,0.6f,0.2f,1);
+		gRef.font.getCurrent().draw(batch,
 			String.format("GS%s (%2dframes/%4dms)%s",
 				Gameplay.setup.isSpeedG2GF() ? "SONIC" : String.format("%1.1f",Gameplay.setup.approach()),
 				Math.round(Gameplay.setup.getApproachTime() * 60),
@@ -109,9 +109,9 @@ public class ScreenMainMenu extends AbstractScreen {
 				Gameplay.setup.isSpeedG2GF() ? "\n"+Judgement.JUST+" automatically awarded for every "+Judgement.EXCEL+"s get." : ""
 			) ,
 			100, 108, 600, 1, false);
-		gRef.font.getDefault().setColor(1,1,1,1);
+		gRef.font.getCurrent().setColor(1,1,1,1);
 
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			"\r\nPress ENTER to play\r\n" +
 				"Press Up/Down to adjust guide speed\r\n" +
 				"Press Left/Right to switch song\r\n\r\n" +

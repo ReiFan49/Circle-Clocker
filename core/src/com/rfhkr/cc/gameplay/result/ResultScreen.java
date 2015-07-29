@@ -88,7 +88,7 @@ public class ResultScreen extends AbstractScreen {
 		batch.begin();
 
 		// Draw Header
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("%s [%s] %n(Mode %02d) <Level %02d> by %s%nPlayed by %s at %s%n",
 				shownResult.getChartset().getMetadata().toStandardFormat(),
 				shownResult.getChart().getDiffName(),
@@ -102,7 +102,7 @@ public class ResultScreen extends AbstractScreen {
 		);
 
 		// Draw Captions Scores
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("Note Score:%n%n%s",
 				shownResult.getScoreRef().keySet().stream()
 					.map(Object::toString)
@@ -110,7 +110,7 @@ public class ResultScreen extends AbstractScreen {
 			),
 			 16,96,304,-1,false
 		);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("Judgement:%n%n%s%n%n%s",
 				shownResult.getJudgeRef().keySet().stream()
 					.filter(x -> x != Judgement.JUST)
@@ -122,7 +122,7 @@ public class ResultScreen extends AbstractScreen {
 		);
 
 		// Draw Score Values
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("%n%n%s",
 				shownResult.getScoreRef().entrySet().stream()
 					.map(valueAnimation)
@@ -131,7 +131,7 @@ public class ResultScreen extends AbstractScreen {
 			),
 			 16,96,192, 0,false
 		);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("%n%n%s%n%n%s",
 				shownResult.getJudgeRef().entrySet().stream()
 					.filter(x->x.getKey()!=Judgement.JUST)
@@ -148,8 +148,8 @@ public class ResultScreen extends AbstractScreen {
 			flash = (float)Math.sin(timePassed * 49);
 		final int
 			justv = shownResult.getJudgeRef().get(Judgement.JUST);
-		gRef.font.getDefault().setColor(1.0f,flash,flash,1.0f);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().setColor(1.0f,flash,flash,1.0f);
+		gRef.font.getCurrent().draw(batch,
 			String.format("%n%n%s",
 				shownResult.getJustRef().entrySet().stream()
 					.map(addAnimation)
@@ -159,16 +159,16 @@ public class ResultScreen extends AbstractScreen {
 			208,96,116,-1,false
 		);
 		if(justv>0)
-			gRef.font.getDefault().draw(batch,
+			gRef.font.getCurrent().draw(batch,
 				String.format("%n%n%+1.1f",
 					addExcelAnim.apply(justv)
 				),
 				528,96,116,-1,false
 			);
-		gRef.font.getDefault().setColor(1,1,1,1);
+		gRef.font.getCurrent().setColor(1,1,1,1);
 
 		// Draw Achievement Rate and Score
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("Achievement %6.2f%%%nScore %09d%n%n%s",
 				addLongAnim.apply(Math.round(shownResult.getAchievement()*100))/100f,
 				addLongAnim.apply(shownResult.getTotalScore()),

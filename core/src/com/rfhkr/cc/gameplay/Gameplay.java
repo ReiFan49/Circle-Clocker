@@ -16,10 +16,7 @@ import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
-import net.dermetfan.gdx.physics.box2d.*;
-import sun.security.util.*;
 
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.time.*;
@@ -311,11 +308,11 @@ public class Gameplay extends AbstractScreen {
 				);
 				batch.setColor(1.0f,1.0f,1.0f,1.0f);
 			}
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("%s - %s",getMetadata().getComposer(),getMetadata().getTitle()),
 			32,32
 		);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("(%s %02d) <%02d> by %s",
 				selectedSet.getDifficulties(chartIndex).getDiffName(),
 				selectedSet.getDifficulties(chartIndex).getDiffLevel(),
@@ -324,8 +321,8 @@ public class Gameplay extends AbstractScreen {
 			),
 			32, 48
 		);
-		gRef.font.getDefault().setColor(1.0f,1.0f * (bgm.isPlaying() ? 0 : 1),1.0f * (bgm.isPlaying() ? 0 : 1),1.0f);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().setColor(1.0f,1.0f * (bgm.isPlaying() ? 0 : 1),1.0f * (bgm.isPlaying() ? 0 : 1),1.0f);
+		gRef.font.getCurrent().draw(batch,
 			String.format("%6.3fsec%n%s%nPosition: %d (%4.2f,%4.2f,%4.2fdeg)",timeElapsed,currentTiming,
 				getMouseFieldPos(),lastRecordedInput.x,lastRecordedInput.y,
 				getInputAngle()
@@ -333,13 +330,13 @@ public class Gameplay extends AbstractScreen {
 			400,48,368, 0, false
 		);
 		if(autoplay)
-			gRef.font.getDefault().draw(batch,
+			gRef.font.getCurrent().draw(batch,
 				String.format("AUTOPLAY <Moves: %04d unit(s)>",
 					AutoInputHandle.moveCount
 				),
 				400,104,368, 0, false
 			);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%n%nJudgement%n%s",
 				gameResult.getTotalScore(),
 				gameResult.getScoreRef().entrySet().stream().map(x ->
@@ -355,8 +352,8 @@ public class Gameplay extends AbstractScreen {
 			),
 			400,128,368,0,false
 		);
-		gRef.font.getDefault().setColor(1.0f,1.0f,1.0f,1.0f);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().setColor(1.0f,1.0f,1.0f,1.0f);
+		gRef.font.getCurrent().draw(batch,
 			String.format("[%d (%d-%d-%d) %d]",
 				calibratedBGM/1000000,
 				TimeUtils.nanosToMillis(TimeUtils.nanoTime()),
@@ -366,7 +363,7 @@ public class Gameplay extends AbstractScreen {
 			),
 			720,560,80,0,false
 		);
-		gRef.font.getDefault().draw(batch,
+		gRef.font.getCurrent().draw(batch,
 			String.format("%06.2f (%03d)fps (%07.3f%%)",
 				1 / delta,
 				Gdx.graphics.getFramesPerSecond(),

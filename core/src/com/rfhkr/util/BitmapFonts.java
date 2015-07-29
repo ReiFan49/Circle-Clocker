@@ -55,6 +55,10 @@ public class BitmapFonts {
 	public BitmapFonts      add(FreeTypeFontGenerator fg, FreeTypeFontGenerator.FreeTypeFontParameter... params) {
 		return add(Arrays.stream(params).map(p -> bmpFonts.add(fg.generateFont(p))).toArray(BitmapFont[]::new));
 	}
+	public BitmapFonts      add(BitmapFont bmpf) {
+		bmpFonts.add(bmpf);
+		return this;
+	}
 	public BitmapFonts      add(BitmapFont... bmpf) {
 		bmpFonts.addAll(Arrays.asList(bmpf));
 		return this;
