@@ -307,7 +307,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 			this.passFlag = pass;
 			EnumMap<Judgement,Float> mj = new EnumMap<>(Judgement.class);
 			List<Judgement> lj = new ArrayList<>(Arrays.asList(Judgement.values()));
-			Collections.reverse(lj);
+			//Collections.reverse(lj);
 			Arrays.stream(judgeReq).forEach(rate -> mj.put(lj.remove(0),(float) rate));
 			this.judgementRequired = Collections.unmodifiableMap(mj);
 		}

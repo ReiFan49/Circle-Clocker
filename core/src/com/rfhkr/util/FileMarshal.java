@@ -115,9 +115,11 @@ public final class FileMarshal {
 		try {
 			if (fileMode != FileMode.FILE_LOAD)
 				throw ReiException.invoke("File mode invalid");
+			if(objr.get1st().available()<=0)
+				throw new EOFException();
 			byte[] v_ary = new byte[2];
 			if(objr.get1st().read(v_ary)<2)
-				throw ReiException.invoke("Version buffer check is less than 2 bytes");
+				throw ReiException.invoke("Version buffer check is less than 2 bytes ("+Arrays.toString(v_ary)+" )");
 			if(!((v_ary[0]==VERSION_MAJOR)&&(v_ary[1]==VERSION_MINOR)))
 				throw ReiException.invoke("Stream version mismatch (file:"+
 				  Stream.of(v_ary).map(b->b.toString()).collect(Collectors.joining(",")) +

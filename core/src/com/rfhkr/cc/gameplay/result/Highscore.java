@@ -84,12 +84,14 @@ public final class Highscore {
 			if (fm.cannotSwap())
 				throw ReiException.invoke(fm.cannotSwapReason());
 			try {
-				while(true) {
-					GameplayResult g = fm.<GameplayResult>load();
+				while (true) {
+					GameplayResult g = fm.load();
 					g.setChart(song);
 					System.out.println(g.getChartset());
 					scores.get(song).add(g);
 				}
+			} catch (NullPointerException e) {
+				// ok!
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
