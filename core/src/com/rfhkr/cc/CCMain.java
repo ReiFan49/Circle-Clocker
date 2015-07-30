@@ -10,6 +10,7 @@ public class CCMain extends Game {
 	// Class Structure
 	// - Properties
 	private static CCMain me;
+	public final static String ENDL = String.format("%n");
 	// - Accessors
 	public static CCMain me() { return me; }
 	// - Predicates

@@ -1,5 +1,6 @@
 package com.rfhkr.cc.gameplay.result;
 
+import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.errors.*;
@@ -21,6 +22,7 @@ public final class Highscore {
 	// ** PROPERTIES
 	private static final Highscore self = new Highscore();
 	private static final AtomicInteger r = new AtomicInteger(1);
+	public static boolean REC_NG = true;
 	// ** ACCESSORS
 	public static Highscore get() {
 		return self;
@@ -132,7 +134,8 @@ public final class Highscore {
 	}
 	public String show(Chart diff,int from,int to,boolean includeNG) {
 		r.set(from-1);
-		return getTFrom(diff,from,to,includeNG).stream().map(x ->
+		Set<GameplayResult> d = getTFrom(diff,from,to,includeNG);
+		return d.size()>0 ? d.stream().map(x ->
 				String.format("#%d %s GS%s %09dpts %06.2f%% %04dcombo (%s) %s %d(+%1.1f)/%d/%d/%d",
 					r.incrementAndGet(),
 					x.getPlayer(),
@@ -148,7 +151,8 @@ public final class Highscore {
 					x.getJudgeRef().get(BAD),
 					x.getJudgeRef().get(MISS)
 				)
-		).collect(Collectors.joining("\n"));
+		).collect(Collectors.joining(ENDL)) :
+		"No scores recorded yet.";
 	}
 	public String showPage(Chart diff,int page,int size,boolean includeNG) {
 		return show(diff,(page-1)*size+1,page*size,includeNG);

@@ -2,8 +2,11 @@ package com.rfhkr.cc.mainmenu;
 
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
+import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.level.*;
 import javafx.stage.*;
+
+import java.util.function.*;
 
 /**
  * @author Rei_Fan49
@@ -42,12 +45,24 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 				case 22:
 					ScreenMainMenu.chartNext();
 					break;
-				case 29:
+				case 29: // A
 					Gameplay.autoplay = !Gameplay.autoplay;
 					break;
-				case 46:
+				case 36: // H
+					Highscore.REC_NG = !Highscore.REC_NG;
+					// Reset the view
+					ScreenMainMenu.chartNext();
+					ScreenMainMenu.chartPrev();
+					break;
+				case 46: // R
 					Chartset.detect("resources\\Charts");
 					CCMain.me().getScreen().show();
+					break;
+				case 48: // T
+					Gameplay.assistTick = !Gameplay.assistTick;
+					break;
+				case 49: // U
+					Metadata.unicode = !Metadata.unicode;
 					break;
 				case 76:
 					ScreenMainMenu.nextScore();

@@ -31,7 +31,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 	// ** INTERACTIONS
 	// ** METHODS
 	public OsuFileReader parse(@NotNull File file) {
-		try (BufferedReader f = new BufferedReader(new FileReader(file))) {
+		try (BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file),"utf-8"))) {
 			String str; Object obj = null;
 			RAWOsuBeatmap bm = new RAWOsuBeatmap();
 			Matcher lm,mt;

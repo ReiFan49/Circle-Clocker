@@ -1,5 +1,6 @@
 package com.rfhkr.cc.gameplay.result;
 
+import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -88,6 +89,7 @@ public class ResultScreen extends AbstractScreen {
 		batch.begin();
 
 		// Draw Header
+		gRef.font.getCurrent().getColor();
 		gRef.font.getCurrent().draw(batch,
 			String.format("%s [%s] %n(Mode %02d) <Level %02d> by %s%nPlayed by %s at %s%n",
 				shownResult.getChartset().getMetadata().toStandardFormat(),
@@ -106,7 +108,7 @@ public class ResultScreen extends AbstractScreen {
 			String.format("Note Score:%n%n%s",
 				shownResult.getScoreRef().keySet().stream()
 					.map(Object::toString)
-					.collect(Collectors.joining("\n"))
+					.collect(Collectors.joining(ENDL))
 			),
 			 16,96,304,-1,false
 		);
@@ -115,7 +117,7 @@ public class ResultScreen extends AbstractScreen {
 				shownResult.getJudgeRef().keySet().stream()
 					.filter(x -> x != Judgement.JUST)
 					.map(Object::toString)
-					.collect(Collectors.joining("\n")),
+					.collect(Collectors.joining(ENDL)),
 				"COMBO"
 			),
 			336,96,304,-1,false
@@ -127,17 +129,17 @@ public class ResultScreen extends AbstractScreen {
 				shownResult.getScoreRef().entrySet().stream()
 					.map(valueAnimation)
 					.map(Object::toString)
-					.collect(Collectors.joining("\n"))
+					.collect(Collectors.joining(ENDL))
 			),
 			 16,96,192, 0,false
 		);
 		gRef.font.getCurrent().draw(batch,
 			String.format("%n%n%s%n%n%s",
 				shownResult.getJudgeRef().entrySet().stream()
-					.filter(x->x.getKey()!=Judgement.JUST)
+					.filter(x -> x.getKey() != Judgement.JUST)
 					.map(valueAnimation)
 					.map(Object::toString)
-					.collect(Collectors.joining("\n")),
+					.collect(Collectors.joining(ENDL)),
 				addNormAnim.apply(shownResult.getMaximumCombo())
 			),
 			336,96,192, 0,false
@@ -154,7 +156,7 @@ public class ResultScreen extends AbstractScreen {
 				shownResult.getJustRef().entrySet().stream()
 					.map(addAnimation)
 					.map(x -> x == 0 ? "" : String.format("%+d",x))
-					.collect(Collectors.joining("\n"))
+					.collect(Collectors.joining(ENDL))
 			),
 			208,96,116,-1,false
 		);

@@ -90,7 +90,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	public int      getMaximumScore() { return maximumScore; }
 	public int      getMaximumCombo() { return maximumCombo; }
 	public GameplayResult setPlayer(String name) { playerName = name; return this; }
-	public GameplayResult setSpeed(float NGS) { GS=NGS; return this; }
+	public GameplayResult setSpeed(float NGS) { GS=Math.max(1,Math.min((float)Gameplay.setup.GSSN,NGS)); return this; }
 	public GameplayResult setRecordable(boolean rec) { REC=rec; return this; }
 	public GameplayResult setPlayTime(Instant time) {
 		playedTime = time; return this;

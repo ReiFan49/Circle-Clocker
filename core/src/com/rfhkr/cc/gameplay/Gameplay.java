@@ -1,5 +1,6 @@
 package com.rfhkr.cc.gameplay;
 
+import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
@@ -31,6 +32,7 @@ import java.util.stream.*;
 public class Gameplay extends AbstractScreen {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
+	public static boolean assistTick = true;
 	public static boolean autoplay = true;
 	public static final Byte[] posBuff = {-1,-1,-1,-1};
 	public static final Setup setup = new Setup();
@@ -273,7 +275,7 @@ public class Gameplay extends AbstractScreen {
 				boolean hovered = Arrays.asList(posBuff).indexOf((byte)(i+1))>=0;
 				Color drawColor = batch.getColor();
 				drawColor.set(1.0f,1.0f,1.0f,1.0f);
-				drawColor.a = (1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f))/10f;
+				drawColor.a = (1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f))/5f;
 				switch(lastJudge.get(i)) {
 					case JUST:
 						drawColor.r *= 1.0;
@@ -337,18 +339,20 @@ public class Gameplay extends AbstractScreen {
 				400,104,368, 0, false
 			);
 		gRef.font.getCurrent().draw(batch,
-			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%n%nJudgement%n%s",
+			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%nCombo %d(%d)%n%nJudgement%n%s",
 				gameResult.getTotalScore(),
 				gameResult.getScoreRef().entrySet().stream().map(x ->
 						String.format("%s: %4dpts",x.getKey(),x.getValue())
-				).collect(Collectors.joining("\n")),
+				).collect(Collectors.joining(ENDL)),
 				Math.round(gameResult.getMaximumScore() * GameplayResult.Rank.BM.accReq / 100),
 				gameResult.getMaximumScore(),
 				gameResult.getAchievement(),
 				gameResult.getRank().rankStr,
+				combo,
+				gameResult.getMaximumCombo(),
 				gameResult.getJudgeRef().entrySet().stream().map(x ->
 						String.format("%s x%4d",x.getKey(),x.getValue())
-				).collect(Collectors.joining("\n"))
+				).collect(Collectors.joining(ENDL))
 			),
 			400,128,368,0,false
 		);
@@ -649,17 +653,19 @@ public class Gameplay extends AbstractScreen {
 				);
 				selectedChart.chart.forEach(note -> {
 					timer.postTask(new NoteCreation(note));
-					timer.scheduleTask(
-						note.getType()==NoteType.NOTE_NORM ?
-							new TouchCheck(note.getPos()-1) :
-							new TouchCheck(note.getPos()-1,note.getLength().toFloat(currentTimings.bpm(note.getStart()))),
-						currentTimings.at(note.getStart())+calibrator.get()
-					);
-					timer.scheduleTask(new AssistTick(),
-						currentTimings.at(note.getStart())+calibrator.get(),
-						note.getLength().toFloat(currentTimings.bpm(note.getStart())),
-						note.getType()==NoteType.NOTE_NORM ? 0 : 1
-					);
+					if(autoplay)
+						timer.scheduleTask(
+							note.getType()==NoteType.NOTE_NORM ?
+								new TouchCheck(note.getPos()-1) :
+								new TouchCheck(note.getPos()-1,note.getLength().toFloat(currentTimings.bpm(note.getStart()))),
+							currentTimings.at(note.getStart())+calibrator.get()
+						);
+					if(autoplay||assistTick)
+						timer.scheduleTask(new AssistTick(),
+							currentTimings.at(note.getStart())+calibrator.get(),
+							note.getLength().toFloat(currentTimings.bpm(note.getStart())),
+							note.getType()==NoteType.NOTE_NORM ? 0 : 1
+						);
 				});
 				timer.scheduleTask(FinishHandle.self,
 					lastNoteTime = currentTimings.at(selectedChart.chart.peek().getEnd()) + 4.0f

@@ -30,10 +30,10 @@ public class ScreenMainMenu extends AbstractScreen {
 	// ** INTERACTIONS
 	// ** METHODS
 	public static void chartNext() {
-		chartId = (chartId+1) % chary.length;
+		chartId = (chartId+(hsPage = 1)) % chary.length;
 	}
 	public static void chartPrev() {
-		while (chartId<=0)
+		while (chartId<=(hsPage = 1)-1)
 			chartId += chary.length;
 		chartId--;
 	}
@@ -107,24 +107,31 @@ public class ScreenMainMenu extends AbstractScreen {
 				Math.round(Gameplay.setup.getApproachTime() * 60),
 				Math.round(Gameplay.setup.getApproachTime() * 1000),
 				Gameplay.setup.isSpeedG2GF() ? "\n"+Judgement.JUST+" automatically awarded for every "+Judgement.EXCEL+"s get." : ""
-			) ,
-			100, 108, 600, 1, false);
+			),
+			100, 108, 600, 1, false
+		);
 		gRef.font.getCurrent().setColor(1,1,1,1);
 
 		gRef.font.getCurrent().draw(batch,
 			"\r\nPress ENTER to play\r\n" +
 				"Press Up/Down to adjust guide speed\r\n" +
 				"Press Left/Right to switch song\r\n\r\n" +
-				String.format("Press A toggle %s AUTOPLAY mode%n%n",Gameplay.autoplay ? "Remove" : "Set") +
+				String.format("Press A toggle %s AUTOPLAY mode%n",Gameplay.autoplay ? "Remove" : "Set") +
+				String.format("Press H toggle %s generated highscore%n",Highscore.REC_NG ? "show" : "hide") +
+				String.format("Press R to refresh current data%n") +
+				String.format("Press T toggle %s ASSIST TICK%n",Gameplay.assistTick ? "Remove" : "Set") +
+				String.format("Press U toggle %s UNICODE%n",Metadata.unicode ? "Remove" : "Set") +
+				"\r\n" +
 				String.format("Chart Name:%n%s (from %s) [%s <%02d|Lv %02d>]%n%nHighscore:%n%s",
 					chartGet().get1st().toStandardFormat(),
 					chartGet().get1st().getSeries(),
 					chartGet().get2nd().getDiffName(),
 					chartGet().get2nd().getMode(),
 					chartGet().get2nd().getDiffLevel(),
-					Highscore.get().showPage(chartGet().get2nd(),hsPage,5,true)
+					Highscore.get().showPage(chartGet().get2nd(),hsPage,5,Highscore.REC_NG)
 			),
-			100, 128, 600, 1, false);
+			100, 128, 600, 1, false
+		);
 		for(AbstractInteract o : obj)
 			o.draw(batch);
 
