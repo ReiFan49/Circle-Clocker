@@ -3,14 +3,15 @@ package com.rfhkr.cc.level;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.function.*;
 
-/**
+/** immutable
  * @author Rei_Fan49
  * @since 2015/06/05
  */
-public class Timing implements Comparable<Timing>{
+public class Timing implements Comparable<Timing>, Serializable{
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	private static transient final Map<Pair<Short,Twin<Byte>>,Timing> cache = new TreeMap<>((a,b)-> {

@@ -33,7 +33,10 @@ public final class FileMarshal {
 	Pair<BufferedInputStream,BufferedOutputStream> bffr;
 	Pair<ObjectInputStream,ObjectOutputStream>     objr;
 	FileMode fileMode;
+	Throwable failedSwap = null;
 	// ** ACCESSORS
+	public boolean cannotSwap() { return Objects.isNull(fstr.get1st()); }
+	public Throwable cannotSwapReason() { return failedSwap; }
 	/** picks pair item using given class
 	 * @param  p  pair object that needs to be checked
 	 * @param  cc a class that used to choose/pick either c1 or c2 (c1 > c2, if same) element on pair p
@@ -42,8 +45,8 @@ public final class FileMarshal {
 	@SuppressWarnings("unchecked")
 	private <IS,OS,RS> RS getPairCond(Pair<IS,OS> p,Class<? super RS> cc) {
 		return p.getElemCond(null,
-			(c,a)->cc.equals(a.getClass()),
-			(c,b)->cc.equals(b.getClass())
+		(c,a) -> cc.equals(a.getClass()),
+		(c,b) -> cc.equals(b.getClass())
 		);
 	}
 	private <FS> FS getFileStream(Class<FS> c) {
@@ -75,6 +78,8 @@ public final class FileMarshal {
 	// ** INTERACTIONS
 	// ** METHODS
 	public FileMarshal swapMode() {
+		if(cannotSwap())
+			return this;
 		switch(fileMode) {
 			case FILE_LOAD: fileMode = FileMode.FILE_SAVE; break;
 			case FILE_SAVE: fileMode = FileMode.FILE_LOAD; break;
@@ -84,8 +89,10 @@ public final class FileMarshal {
 	}
 	public void close() {
 		try {
-			objr.get1st().close();
-			objr.get2nd().close();
+			switch(fileMode) {
+				case FILE_LOAD: objr.get1st().close(); break;
+				case FILE_SAVE: objr.get2nd().close(); break;
+			}
 		} catch (Exception e) {
 			System.err.printf("%s: %s%n",e,e.getMessage());
 		}
@@ -95,7 +102,7 @@ public final class FileMarshal {
 			if(fileMode!=FileMode.FILE_SAVE) throw ReiException.invoke("File mode invalid");
 			objr.get2nd().write(new byte[]{VERSION_MAJOR,VERSION_MINOR});
 			objr.get2nd().writeObject(obj);
-		} catch (Exception e) { System.err.println(e); }
+		} catch (Exception e) { e.printStackTrace(); }
 		return this;
 	}
 	public FileMarshal dump(@NotNull Object... objs) {
@@ -118,7 +125,7 @@ public final class FileMarshal {
 					Stream.of(VERSION_MAJOR,VERSION_MINOR).map(b->b.toString()).collect(Collectors.joining(","))+")");
 			T obj = (T)objr.get1st().readObject();
 			return obj;
-		} catch (Exception e) {System.err.println(e); }
+		} catch (Exception e) { System.err.println(e.getMessage()); }
 		return null;
 	}
 	// <<END>> Instance Structure
@@ -126,9 +133,19 @@ public final class FileMarshal {
 	private enum FileMode { FILE_NONE, FILE_SAVE, FILE_LOAD }
 	// Constructors
 	private FileMarshal(FileMode fm,String fn) throws Exception {
-		fstr = Pair.gen(new FileInputStream(fn),new FileOutputStream(fn));
-		bffr = Pair.gen(new BufferedInputStream(fstr.get1st()),new BufferedOutputStream(fstr.get2nd()));
-		objr = Pair.gen(new ObjectInputStream(bffr.get1st()),new ObjectOutputStream(bffr.get2nd()));
+		try {
+			if(fm==FileMode.FILE_SAVE)
+				throw new Exception("requested");
+			fstr = Pair.gen(new FileInputStream(fn),null);
+			bffr = Pair.gen(new BufferedInputStream(fstr.get1st()),null);
+			objr = Pair.gen(new ObjectInputStream(bffr.get1st()),null);
+		} catch (Exception e) {
+			System.err.println("Switching to save-only, because " + e);
+			fstr = Pair.gen(null,new FileOutputStream(fn));
+			bffr = Pair.gen(null,new BufferedOutputStream(fstr.get2nd()));
+			objr = Pair.gen(null,new ObjectOutputStream(bffr.get2nd()));
+			failedSwap = e;
+		}
 		switch(fm) {
 			case FILE_SAVE:
 			case FILE_LOAD:

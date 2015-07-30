@@ -21,7 +21,7 @@ import java.util.stream.*;
 public final class GameplayResult implements Comparable<GameplayResult>, Serializable {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
-	private static final DateTimeFormatter timeFormatter = DateTimeFormatter
+	private static final transient DateTimeFormatter timeFormatter = DateTimeFormatter
 		.ofLocalizedDateTime( FormatStyle.FULL )
 		.withLocale( Locale.getDefault() )
 		.withZone( ZoneId.systemDefault() );
@@ -64,12 +64,12 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	private String   playerName;
 	private Instant  playedTime;
 	@NotNull
-	private Chartset playedSet;
+	private transient Chartset playedSet;
 	@NotNull
-	private Chart playedChart;
+	private transient Chart playedChart;
 	private EnumMap<NoteType ,Integer> score;
 	private EnumMap<NoteType ,Integer> just ;
-	private TreeMap<Judgement,Integer> judge;
+	private EnumMap<Judgement,Integer> judge;
 	private int   maximumScore;
 	private int   maximumCombo;
 	// ** ACCESSORS
@@ -84,9 +84,9 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	}
 	public Chartset getChartset() { return playedSet; }
 	public Chart    getChart   () { return playedChart; }
-	public Map<NoteType ,Integer> getScoreRef() { return score; }
-	public Map<NoteType ,Integer> getJustRef () { return just ; }
-	public Map<Judgement,Integer> getJudgeRef() { return judge; }
+	public EnumMap<NoteType ,Integer> getScoreRef() { return score; }
+	public EnumMap<NoteType ,Integer> getJustRef () { return just ; }
+	public EnumMap<Judgement,Integer> getJudgeRef() { return judge; }
 	public int      getMaximumScore() { return maximumScore; }
 	public int      getMaximumCombo() { return maximumCombo; }
 	public GameplayResult setPlayer(String name) { playerName = name; return this; }
@@ -104,7 +104,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	}
 	public GameplayResult setJustRef (EnumMap<NoteType ,Integer> newRef) { just =newRef; return this; }
 	public GameplayResult setScoreRef(EnumMap<NoteType ,Integer> newRef) { score=newRef; return this; }
-	public GameplayResult setJudgeRef(TreeMap<Judgement,Integer> newRef) { judge=newRef; return this; }
+	public GameplayResult setJudgeRef(EnumMap<Judgement,Integer> newRef) { judge=newRef; return this; }
 	public GameplayResult setMaxCombo(int newCombo) { maximumCombo = newCombo; return this; }
 	// ** PREDICATES
 	public boolean  isFullCombo() { return playedChart.chart.size == maximumCombo; }
@@ -213,7 +213,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 			// Define Note Iterator
 			final Iterator<Note> noteIterator = playedChart.chart.iterator();
 			// Generate any value from zero to one, and process them, until the end of iteration
-			System.out.printf("\033[34mPerfection rate of \033[1;32m%10.6f%%\033[34m:\033[m%n",ratio*100);
+			//System.out.printf("\033[34mPerfection rate of \033[1;32m%10.6f%%\033[34m:\033[m%n",ratio*100);
 			RNG.doubles(playedChart.chart.size,0,1)
 				.map(x -> Math.pow(x,spreadRatio))
 				.reduce(1.0,(sumainder,mapped) -> {
@@ -225,7 +225,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 						)
 						.map(Map.Entry::getKey)
 						.peek(x ->
-								System.out.printf("%-4s happened at Note[(%4d,%2d/%2d),%2d] with variance of %1.10f + %1.10f = %1.10f%n",
+								System.out.printf(true ? "" : "%-4s happened at Note[(%4d,%2d/%2d),%2d] with variance of %1.10f + %1.10f = %1.10f%n",
 									x,
 									note.getStart().getQuotient(),
 									note.getStart().getRemainder(),
@@ -281,7 +281,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	}
 	// <<END>> Instance Structure
 	// Nested Classes
-	public static enum Rank {
+	public enum Rank {
 		SSS("SS",+1,100f,true ,1.0f, .0f, .0f, .0f, .0f),
 		SS ("SS", 0,100f,true , .0f, .0f, .0f, .0f, .0f),
 		S  ( "S", 0, 99f,true , .0f, .0f, .0f, .0f, .0f),
@@ -318,8 +318,8 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 			.setChart(diffRef)
 			.setPlayTime(Instant.now())
 			.setJustRef (new EnumMap<>(NoteType .class))
-			.setScoreRef(new EnumMap<>(NoteType.class))
-			.setJudgeRef(new TreeMap<>((lhs,rhs) -> rhs.ordinal() - lhs.ordinal()));
+			.setScoreRef(new EnumMap<>(NoteType .class))
+			.setJudgeRef(new EnumMap<>(Judgement.class));
 		Stream.of(NoteType .values())
 			.filter(k -> k.scoreMult > 0)
 			.peek(k -> just.computeIfAbsent(k,(t) -> 0))

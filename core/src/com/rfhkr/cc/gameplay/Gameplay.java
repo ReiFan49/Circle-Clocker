@@ -384,7 +384,7 @@ public class Gameplay extends AbstractScreen {
 	public void processStepPost(float delta) {
 	}
 	void applyJudge(int i,Judgement res,boolean colorChange) {
-		if(!colorChange || res.ordinal() > lastJudge.get(i).ordinal())
+		if(!colorChange || res.ordinal() < lastJudge.get(i).ordinal())
 			lastJudge.set(i,res);
 		if(res != Judgement.JUST)
 			combo = res.keepCombo ? ++combo : 0;
@@ -565,6 +565,7 @@ public class Gameplay extends AbstractScreen {
 				Highscore.get().getScores(now().getChart()).add(now().gameResult);
 			now().bgm.stop();
 			now().requestNewScreen(ResultScreen.show(now().gameResult));
+			Highscore.get().saveScores(now().gameResult.getChart());
 		}
 	}
 	// Constructors

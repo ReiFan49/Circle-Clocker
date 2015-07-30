@@ -82,7 +82,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	public Judgement getDownJudgement() { return judgeResult.get1st(); }
 	public Judgement getUpJudgement() { return judgeResult.get2nd(); }
 	public Judgement getWorstJudgement() {
-		return getUpJudgement()==null || getDownJudgement().compareTo(getUpJudgement()) <= 0 ?
+		return getUpJudgement()==null || getDownJudgement().compareTo(getUpJudgement()) >=0 ?
 					 getDownJudgement() : getUpJudgement();
 	}
 	public float getHitTime() { return hitTime.get1st(); }
@@ -97,7 +97,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// ** METHODS
 	void hasJudged() { judged = true; holdDown = false; }
 	public Judgement checkTolerance(float hitTime) {
-		return Arrays.stream(Judgement.values(),1,4).reduce(Judgement.MISS,(pre,cur)-> hitTime > cur.maxTime ? pre : cur);
+		return Arrays.stream(Judgement.values(),1,5).reduce(Judgement.EXCEL,(pre,cur)-> hitTime <= cur.maxTime ? pre : cur);
 	}
 	/**
 	 * performs the <code>noteHit</code> event handling, by replacing {@link AbstractInteract} render method.

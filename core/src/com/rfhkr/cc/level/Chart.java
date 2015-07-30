@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.*;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -11,7 +12,7 @@ import java.util.stream.*;
  * @author Rei_Fan49
  * @since 2015/06/04
  */
-public final class Chart implements Comparable<Chart> {
+public final class Chart implements Comparable<Chart>, Serializable {
 	// <BEGIN> Class Structure
 	// ** PROPERTIES
 	// ** ACCESSORS

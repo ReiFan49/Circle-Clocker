@@ -1,14 +1,18 @@
 package com.rfhkr.cc.io;
 
 import com.rfhkr.cc.errors.*;
+import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.cc.level.convert.*;
 import com.rfhkr.util.*;
 import com.sun.istack.internal.*;
+import sun.security.mscapi.*;
+import sun.security.provider.*;
 
 import java.io.*;
 import java.nio.file.*;
+import java.security.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -246,6 +250,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 				.setSongName((String)general.get("AudioFilename"))
 				.setSongBG(bg)
 				.setPath(PathResolver.from(cp).rep(""));
+			Highscore.get().loadScores(ch);
 			return ch;
 		}
 	}

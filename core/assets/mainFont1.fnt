@@ -1,6 +1,6 @@
 info face="ÇcÇeçNàÛëÃW4" size=-16 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=4 padding=0,0,0,0 spacing=1,1 outline=1
 common lineHeight=16 base=13 scaleW=2048 scaleH=2048 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
-page id=0 file="mainFont_0.png"
+page id=0 file="mainFont1_0.png"
 chars count=7515
 char id=32   x=820   y=1060  width=3     height=3     xoffset=-1    yoffset=-1    xadvance=8     page=0  chnl=15
 char id=33   x=2042  y=288   width=5     height=14    xoffset=1     yoffset=1     xadvance=8     page=0  chnl=15

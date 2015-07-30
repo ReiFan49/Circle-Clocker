@@ -4,6 +4,8 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.*;
+import com.badlogic.gdx.tools.*;
+import com.rfhkr.cc.errors.*;
 import com.sun.istack.internal.*;
 
 import java.util.*;
@@ -63,6 +65,15 @@ public class BitmapFonts {
 		bmpFonts.addAll(Arrays.asList(bmpf));
 		return this;
 	}
+	public BitmapFonts      addDirectory(String fn) {
+		FontDirectoryProcessor.self.request(this);
+		try {
+			FontDirectoryProcessor.self.process(Gdx.files.internal(fn).file(),null);
+		} catch (Exception e) {
+			throw ReiException.invoke(e);
+		}
+		return this;
+	}
 	public BitmapFonts      dispose(int index) {
 		if (!getFonts(index).equals(getDefaultFont()))
 			getFonts(index).dispose();
@@ -76,6 +87,44 @@ public class BitmapFonts {
 		return this.setIndex(currentIndex);
 	}
 	// <<END>> Instance Structure
+	// Nested Classes
+	/**
+	 * @author Rei_Fan49
+	 * @since 2015/07/30
+	 */
+	static class FontDirectoryProcessor extends FileProcessor {
+		// <BEGIN> Class Structure
+		// ** PROPERTIES
+		private static FontDirectoryProcessor self = new FontDirectoryProcessor(null);
+		// ** ACCESSORS
+		// ** PREDICATES
+		// ** INTERACTIONS
+		// ** METHODS
+		// <<END>> Class Structure
+		// <BEGIN> Instance Structure
+		// ** PROPERTIES
+		private BitmapFonts requesting;
+		// ** ACCESSORS
+		// ** PREDICATES
+		// ** INTERACTIONS
+		// ** METHODS
+		void request(BitmapFonts r) {
+			requesting = r;
+		}
+		protected void processFile(Entry entry) throws Exception {
+			String fn = entry.inputFile.getPath();
+			if( fn.endsWith(".fnt") )
+				requesting.add(new BitmapFont(Gdx.files.internal(fn),true));
+			addProcessedFile(entry);
+		}
+		// <<END>> Instance Structure
+		// Nested Classes
+		// Constructors
+		private FontDirectoryProcessor(BitmapFonts r) {
+			this.requesting = r; addInputSuffix(".fnt");
+		}
+		// Driver
+	}
 	// Constructors
 	public BitmapFonts() { this(getDefaultFont()); }
 	public BitmapFonts(@NotNull BitmapFont... bmpFonts) {

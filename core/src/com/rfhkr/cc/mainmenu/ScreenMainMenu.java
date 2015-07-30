@@ -1,5 +1,6 @@
 package com.rfhkr.cc.mainmenu;
 
+import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -116,12 +117,12 @@ public class ScreenMainMenu extends AbstractScreen {
 			"\r\nPress ENTER to play\r\n" +
 				"Press Up/Down to adjust guide speed\r\n" +
 				"Press Left/Right to switch song\r\n\r\n" +
-				String.format("Press A toggle %s AUTOPLAY mode%n",Gameplay.autoplay ? "Remove" : "Set") +
-				String.format("Press H toggle %s generated highscore%n",Highscore.REC_NG ? "show" : "hide") +
+				String.format("Press A toggle %s AUTOPLAY mode%n",Gameplay.autoplay ? "remove" : "set") +
+				String.format("Press H toggle %s generated highscore%n",Highscore.REC_NG ? "hide" : "show") +
 				String.format("Press R to refresh current data%n") +
-				String.format("Press T toggle %s ASSIST TICK%n",Gameplay.assistTick ? "Remove" : "Set") +
-				String.format("Press U toggle %s UNICODE%n",Metadata.unicode ? "Remove" : "Set") +
-				"\r\n" +
+				String.format("Press T toggle %s ASSIST TICK%n",Gameplay.assistTick ? "remove" : "set") +
+				String.format("Press U toggle %s UNICODE%n",Metadata.unicode ? "remove" : "set") +
+				ENDL +
 				String.format("Chart Name:%n%s (from %s) [%s <%02d|Lv %02d>]%n%nHighscore:%n%s",
 					chartGet().get1st().toStandardFormat(),
 					chartGet().get1st().getSeries(),

@@ -8,7 +8,9 @@ import com.rfhkr.cc.gameplay.*;
 import static com.rfhkr.cc.gameplay.Judgement.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.util.*;
+import sun.print.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.stream.*;
@@ -57,6 +59,72 @@ public final class Highscore {
 			return x;
 		});
 	}
+	// ** PREDICATES
+	// ** INTERACTIONS
+	// ** METHODS
+	public Highscore loadScores(Chart song) {
+		boolean uni = Metadata.unicode;
+		Metadata.unicode = false;
+		String chartName = String.format("%s (%s) [%s %02d %02d].dat",
+			Chartset.find(song).getMetadata().toStandardFormat(),
+			song.getDiffCharter(),
+			song.getDiffName(),
+			song.getDiffLevel(),
+			song.getMode()
+		);
+		Metadata.unicode = uni;
+		try {
+			// Refresh Score Catalog
+			getScores(song);
+			// Load the file
+			FileMarshal fm = FileMarshal.loadFromFile(
+				Gdx.files.local("resources\\Scores\\").toString() + "\\" +
+					chartName
+			);
+			if (fm.cannotSwap())
+				throw ReiException.invoke(fm.cannotSwapReason());
+			try {
+				while(true) {
+					GameplayResult g = fm.<GameplayResult>load();
+					g.setChart(song);
+					System.out.println(g.getChartset());
+					scores.get(song).add(g);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				fm.close();
+			}
+		} catch (Throwable e) {
+			System.err.printf("Failed to load record to \"%s\"%n",chartName);
+			e.printStackTrace();
+		}
+		return this;
+	}
+	public Highscore saveScores(Chart song) {
+		boolean uni = Metadata.unicode;
+		Metadata.unicode = false;
+		String chartName = String.format("%s (%s) [%s %02d %02d].dat",
+			Chartset.find(song).getMetadata().toStandardFormat(),
+			song.getDiffCharter(),
+			song.getDiffName(),
+			song.getDiffLevel(),
+			song.getMode()
+		);
+		Metadata.unicode = uni;
+		try {
+			FileMarshal fm = FileMarshal.saveToFile(
+				Gdx.files.local("resources\\Scores\\").toString() + "\\" +
+					chartName
+			);
+			scores.get(song).stream().filter(GameplayResult::isRecordable).forEach(fm::dump);
+			fm.close();
+		} catch (Exception e) {
+			System.err.printf("Failed to save record to \"%s\"%n",chartName);
+			e.printStackTrace();
+		}
+		return this;
+	}
 	public void clearScores(){
 		scores.clear();
 	}
@@ -103,7 +171,7 @@ public final class Highscore {
 	 */
 	public GameplayResult getT1(Chart song,boolean includeNG) {
 		return getT(song,1,includeNG).stream().findFirst().orElseThrow(() ->
-			NoRecordException.invoke("Current chart does not have any records.")
+				NoRecordException.invoke("Current chart does not have any records.")
 		);
 	}
 
@@ -117,7 +185,7 @@ public final class Highscore {
 	 */
 	public GameplayResult getR(Chart song,int rank,boolean includeNG) {
 		return getTFrom(song,rank-1,rank,includeNG).stream().findFirst().orElseThrow(() ->
-			NoRecordException.invoke("Current chart record does not reach rank "+rank)
+				NoRecordException.invoke("Current chart record does not reach rank "+rank)
 		);
 	}
 	public int getR(Chart song,GameplayResult result,boolean includeNG) {
@@ -136,30 +204,26 @@ public final class Highscore {
 		r.set(from-1);
 		Set<GameplayResult> d = getTFrom(diff,from,to,includeNG);
 		return d.size()>0 ? d.stream().map(x ->
-				String.format("#%d %s GS%s %09dpts %06.2f%% %04dcombo (%s) %s %d(+%1.1f)/%d/%d/%d",
-					r.incrementAndGet(),
-					x.getPlayer(),
-					x.getSpeedStr(),
-					x.getTotalScore(),
-					x.getAchievement(),
-					x.getMaximumCombo(),
-					x.getRank().rankStr,
-					x.getRank().passFlag ? "PASS" : "FAIL",
-					x.getJudgeRef().get(EXCEL),
-					x.getJudgeRef().get(JUST)/10f,
-					x.getJudgeRef().get(HIT),
-					x.getJudgeRef().get(BAD),
-					x.getJudgeRef().get(MISS)
-				)
-		).collect(Collectors.joining(ENDL)) :
-		"No scores recorded yet.";
+			String.format("#%d %s GS%s %09dpts %06.2f%% %04dcombo (%s) %s %d(+%1.1f)/%d/%d/%d",
+				r.incrementAndGet(),
+				x.getPlayer(),
+				x.getSpeedStr(),
+				x.getTotalScore(),
+				x.getAchievement(),
+				x.getMaximumCombo(),
+				x.getRank().rankStr,
+				x.getRank().passFlag ? "PASS" : "FAIL",
+				x.getJudgeRef().get(EXCEL),
+				x.getJudgeRef().get(JUST)/10f,
+				x.getJudgeRef().get(HIT),
+				x.getJudgeRef().get(BAD),
+				x.getJudgeRef().get(MISS)
+			)
+		).collect(Collectors.joining(ENDL)) : "No scores recorded yet.";
 	}
 	public String showPage(Chart diff,int page,int size,boolean includeNG) {
 		return show(diff,(page-1)*size+1,page*size,includeNG);
 	}
-	// ** PREDICATES
-	// ** INTERACTIONS
-	// ** METHODS
 	// <<END>> Instance Structure
 	// Nested Classes
 	// Constructors

@@ -36,9 +36,8 @@ public class CCMain extends Game {
 		font  = new BitmapFonts();
 		size  = Twin.set(1,1);
 		Gdx.input.setInputProcessor(inputHandler);
-		font
-			.add(new BitmapFont(Gdx.files.internal(PathResolver.at("mainFont.fnt").build("core","assets").resolve()),true))
-			.setIndex(1);
+		font.addDirectory("core\\assets");
+		font.setIndex(2);
 		this.setScreen(AbstractScreen.request(ScreenMainMenu.class));
 	}
 	public void dispose() {
