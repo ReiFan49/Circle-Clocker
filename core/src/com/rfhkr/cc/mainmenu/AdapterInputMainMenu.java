@@ -4,9 +4,7 @@ import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
 import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.level.*;
-import javafx.stage.*;
-
-import java.util.function.*;
+import com.rfhkr.util.*;
 
 /**
  * @author Rei_Fan49
@@ -53,6 +51,12 @@ public class AdapterInputMainMenu extends AbstractInputAdapter {
 					// Reset the view
 					ScreenMainMenu.chartNext();
 					ScreenMainMenu.chartPrev();
+					break;
+				case 37: // I
+					Gameplay.orientation = BitOperator.inverseBit(Gameplay.orientation,1);
+					break;
+				case 43: // O
+					Gameplay.orientation = BitOperator.inverseBit(Gameplay.orientation,0);
 					break;
 				case 46: // R
 					Chartset.detect("resources\\Charts");

@@ -4,7 +4,6 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.mainmenu.*;
-import com.sun.istack.internal.*;
 
 /**
  * @author Rei_Fan49
@@ -26,9 +25,9 @@ public abstract class AbstractInteract<C extends Shape2D> implements Interactive
 	protected float holdDur   = 0.0f;
 	protected C     touchGeo;
 	// ** ACCESSORS
-	@Nullable
+	/* @Nullable */
 	private Rectangle getRectangle() { return (touchGeo.getClass().equals(Rectangle.class)) ? (Rectangle)(touchGeo) : null;	}
-	@Nullable
+	/* @Nullable */
 	private Circle    getCircle()    { return (touchGeo.getClass().equals(Circle.class)) ? (Circle)(touchGeo) : null;	}
 	public final float   getX  () { return pos.x; }
 	public final float   getY  () { return pos.y; }

@@ -6,7 +6,6 @@ import com.rfhkr.cc.errors.*;
 import com.rfhkr.cc.gameplay.result.*;
 import com.rfhkr.cc.io.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -25,7 +24,7 @@ public final class Chartset implements Serializable, Comparable<Chartset> {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
-	public static Chartset designate(Metadata data,@Nullable Chart diff) {
+	public static Chartset designate(Metadata data,/* @Nullable */ Chart diff) {
 		Chartset target = cache.stream().reduce(null,(pre,cur)->
 			cur.getMetadata().equals(data) ? cur : pre
 		);
@@ -35,7 +34,6 @@ public final class Chartset implements Serializable, Comparable<Chartset> {
 			if (Objects.isNull(target))
 				target = new Chartset(data);
 			target.addDifficulty(diff);
-		Highscore.get().getScores(diff);
 		return target;
 	}
 	public static Chartset find(Chart diff) {
@@ -54,7 +52,7 @@ public final class Chartset implements Serializable, Comparable<Chartset> {
 			throw ReiException.invoke(e);
 		}
 	}
-	public static Chartset saveSetToFile(@NotNull Chartset cs, String fn) {
+	public static Chartset saveSetToFile(/* @NotNull */ Chartset cs, String fn) {
 		// TODO: how to export and import chart
 		return null;
 	}

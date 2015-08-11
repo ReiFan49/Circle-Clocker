@@ -1,7 +1,5 @@
 package com.rfhkr.cc.gameplay;
 
-import java.io.*;
-
 /**
  * @author Rei_Fan49
  * @since 2015/06/08

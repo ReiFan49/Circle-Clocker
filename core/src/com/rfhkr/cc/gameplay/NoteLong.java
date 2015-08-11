@@ -1,11 +1,11 @@
 package com.rfhkr.cc.gameplay;
 
 import com.badlogic.gdx.graphics.g2d.*;
-import com.sun.istack.internal.*;
-import com.rfhkr.cc.level.Chart.NoteType;
-import static com.rfhkr.cc.level.Chart.NoteType.*;
+import com.rfhkr.cc.level.Chart.*;
 
 import java.util.function.*;
+
+import static com.rfhkr.cc.level.Chart.NoteType.*;
 
 /**
  * @author Rei_Fan49
@@ -89,7 +89,7 @@ class NoteLong extends NoteBasic implements EarlyJudgable,LateJudgable {
 	// -- Simple Constructor (no Amplifier)
 	public NoteLong(int slot,float s,float e) { this(slot,s,e,1); }
 	// -- Grand Constructor (with Amplifier)
-	public NoteLong(int slot,float s,float e,@NotNull int n) {
+	public NoteLong(int slot,float s,float e,/* @NotNull */ int n) {
 		super(slot,s,e,n);
 	}
 	// Driver

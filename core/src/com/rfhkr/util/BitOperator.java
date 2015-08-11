@@ -41,92 +41,82 @@ public final class BitOperator {
 	 *  @param  i on the <i>i</i>th bit
 	 *  @return <i>i</i>th byte of the <i>x</i>, with <i>i</i> starts from the least significant one
 	 *  @see #readBit(long,Byte)
-	 *  @see #readBit(Number,Integer)
 	**/
 	public static Byte    readBit (long   x, Integer i) { return readBit(x,i.byteValue()); }
-	/** shorthand for the <i>byte-sized</i> index, typecasting performed.
-	 *  @param  x value to read
-	 *  @param  i on the <i>i</i>th bit
-	 *  @return <i>i</i>th byte of the <i>x</i>, with <i>i</i> starts from the least significant one
-	 *  @see #readBit(long,Byte)
-	 *  @see #readBit(long,Integer)
-	**/
-	public static Byte    readBit (Number x, Integer i) { System.err.println(x.getClass());return readBit(x.longValue(),i.byteValue()); }
-	
-	
+
 	/** overwrites the <i>i</i>th bit of <i>x</i> with <b>bit</b> code, which <i>i</i> starts from the least significant bit.
 	 *  @param  x   number that given for bit-reading
 	 *  @param  i   byte index for editing (0th index at least significant bit)
 	 *  @param  bit value for overwriting the <i>i</i>th byte of the number
 	 *  @return modified of <i>x</i> with the <i>i</i>th byte replaced with <i>bit</i> value.
-	 *  @see    #writeBit(int,Byte,Boolean)
+	 *  @see    #writeBit(int,byte,boolean)
 	**/
-	public static Integer writeBit(int    x, Byte    i, Byte    bit) { return (x & ~(1<<i))|(     bit << i     ); }
+	public static int writeBit(int    x, byte    i, byte    bit) { return (x & ~(1<<i))|(     bit << i     ); }
 	/** overwrites the <i>i</i>th bit of <i>x</i> with <b>bit</b> code, which <i>i</i> starts from the least significant bit.
 	 *  @param  x   number that given for bit-reading
 	 *  @param  i   byte index for editing (0th index at least significant bit)
 	 *  @param  bit value for overwriting the <i>i</i>th byte of the number
 	 *  @return modified of <i>x</i> with the <i>i</i>th byte replaced with <i>bit</i> value.
-	 *  @see    #writeBit(int,Byte,Byte)
+	 *  @see    #writeBit(int,byte,byte)
 	**/
-	public static Integer writeBit(int    x, Byte    i, Boolean bit) { return (x & ~(1<<i))|((bit ? 1 : 0) << i); }
+	public static int writeBit(int    x, byte    i, boolean bit) { return (x & ~(1<<i))|((bit ? 1 : 0) << i); }
 	/** overwrites the <i>i</i>th bit of <i>x</i> with <b>bit</b> code, which <i>i</i> starts from the least significant bit.
 	 *  @param  x   number that given for bit-reading
 	 *  @param  i   byte index for editing (0th index at least significant bit)
 	 *  @param  bit value for overwriting the <i>i</i>th byte of the number
 	 *  @return modified of <i>x</i> with the <i>i</i>th byte replaced with <i>bit</i> value.
-	 *  @see    #writeBit(long,Byte,Boolean)
+	 *  @see    #writeBit(long,byte,boolean)
 	**/
-	public static Long    writeBit(long   x, Byte    i, Byte    bit) { return (x & ~(1<<i))|(     bit << i     ); }
+	public static long writeBit(long x, byte i, byte bit) { return (x & ~(1<<i))|(     bit << i     ); }
 	/** overwrites the <i>i</i>th bit of <i>x</i> with <b>bit</b> code, which <i>i</i> starts from the least significant bit.
 	 *  @param  x   number that given for bit-reading
 	 *  @param  i   byte index for editing (0th index at least significant bit)
 	 *  @param  bit value for overwriting the <i>i</i>th byte of the number
 	 *  @return modified of <i>x</i> with the <i>i</i>th byte replaced with <i>bit</i> value.
-	 *  @see    #writeBit(long,Byte,Byte)
+	 *  @see    #writeBit(long,byte,byte)
 	**/
-	public static Long    writeBit(long   x, Byte    i, Boolean bit) { return (x & ~(1<<i))|((bit ? 1 : 0) << i); }
+	public static long writeBit(long x, byte i, boolean bit) { return (x & ~(1<<i))|((bit ? 1 : 0) << i); }
 	// Aliases
 	/** shorthand for the <i>byte-sized</i> index bit-modification, typecasting performed.
 	 *  @param  x   base value
 	 *  @param  i   index to modify the bit
 	 *  @param  bit modifier value
 	 *  @return modified <i>x</i> with <i>i</i>th bit (0th is most insignificant) replaced with <i>bit</i> value
-	 *  @see #writeBit(int,Byte,Byte)
-	 *  @see #writeBit(int,Byte,Boolean)
-	 *  @see #writeBit(int,Integer,Boolean)
+	 *  @see #writeBit(int,byte,byte)
+	 *  @see #writeBit(int,byte,boolean)
+	 *  @see #writeBit(int,int,boolean)
 	**/
-	public static Integer writeBit(int    x, Integer i, Integer bit) { return writeBit(x,i.byteValue(),bit.byteValue()); }
+	public static int writeBit(int x, int i, int bit) { return writeBit(x,(byte)i,(byte)bit); }
 	/** shorthand for the <i>byte-sized</i> index bit-modification, typecasting performed.
 	 *  @param  x   base value
 	 *  @param  i   index to modify the bit
 	 *  @param  bit modifier value
 	 *  @return modified <i>x</i> with <i>i</i>th bit (0th is most insignificant) replaced with <i>bit</i> value
-	 *  @see #writeBit(int,Byte,Byte)
-	 *  @see #writeBit(int,Byte,Boolean)
-	 *  @see #writeBit(int,Integer,Integer)
+	 *  @see #writeBit(int,byte,byte)
+	 *  @see #writeBit(int,byte,boolean)
+	 *  @see #writeBit(int,int,int)
 	**/
-	public static Integer writeBit(int    x, Integer i, Boolean bit) { return writeBit(x,i.byteValue(),bit); }
+	public static int writeBit(int x, int i, boolean bit) { return writeBit(x,(byte)i,bit); }
 	/** shorthand for the <i>byte-sized</i> index bit-modification, typecasting performed.
 	 *  @param  x   base value
 	 *  @param  i   index to modify the bit
 	 *  @param  bit modifier value
 	 *  @return modified <i>x</i> with <i>i</i>th bit (0th is most insignificant) replaced with <i>bit</i> value
-	 *  @see #writeBit(long,Byte,Byte)
-	 *  @see #writeBit(long,Byte,Boolean)
-	 *  @see #writeBit(long,Integer,Boolean)
+	 *  @see #writeBit(long,byte,byte)
+	 *  @see #writeBit(long,byte,boolean)
+	 *  @see #writeBit(long,int,boolean)
 	**/
-	public static Long    writeBit(long   x, Integer i, Integer bit) { return writeBit(x,i.byteValue(),bit.byteValue()); }
+	public static long writeBit(long x, int i, int bit) { return writeBit(x,(byte)i,(byte)bit); }
 	/** shorthand for the <i>byte-sized</i> index bit-modification, typecasting performed.
 	 *  @param  x   base value
 	 *  @param  i   index to modify the bit
 	 *  @param  bit modifier value
 	 *  @return modified <i>x</i> with <i>i</i>th bit (0th is most insignificant) replaced with <i>bit</i> value
-	 *  @see #writeBit(long,Byte,Byte)
-	 *  @see #writeBit(long,Byte,Boolean)
-	 *  @see #writeBit(long,Integer,Integer)
+	 *  @see #writeBit(long,byte,byte)
+	 *  @see #writeBit(long,byte,boolean)
+	 *  @see #writeBit(long,int,int)
 	**/
-	public static Long    writeBit(long   x, Integer i, Boolean bit) { return writeBit(x,i.byteValue(),bit); }
+	public static long    writeBit(long   x, int     i, boolean bit) { return writeBit(x,(byte)i,bit); }
 	
 	
 	/** 
@@ -227,8 +217,23 @@ public final class BitOperator {
 	**/
 	public static Number  ringOpRight(Number  x, Integer  len) { return ringOpRight(x.longValue(),len.byteValue()); }
 	
-	
-	/** 
+	public static byte inverseBit(byte x,int i) {
+		byte b = readBit(x,i);
+		return (byte)writeBit(x,i,b==0 ? 1 : 0);
+	}
+	public static short inverseBit(short x,int i) {
+		byte b = readBit(x,i);
+		return (short)writeBit(x,i,b==0 ? 1 : 0);
+	}
+	public static int inverseBit(int x,int i) {
+		byte b = readBit(x,i);
+		return writeBit(x,i,b==0 ? 1 : 0);
+	}
+	public static long inverseBit(long x,int i) {
+		byte b = readBit(x,i);
+		return writeBit(x,i,b==0 ? 1 : 0);
+	}
+	/**
 	 *  turn the number into a bit form in string
 	 *  @param x   the number
 	 *  @param len how many bits that you want to take FROM RIGHT
@@ -287,10 +292,6 @@ public final class BitOperator {
 		} catch (Exception e) {
 		}
 		System.out.println("\t bits: " + BitOperator.showBits(49));
-		System.out.println("\t bits: " + BitOperator.showBits(BitOperator.writeBit(49, 4, 0).intValue()));
-		System.out.println("\t bits: " + BitOperator.showBits(BitOperator.writeBit(49, 4, 1).intValue()));
-		System.out.println("\t bits: " + BitOperator.showBits(BitOperator.writeBit(49, 3, 0).intValue()));
-		System.out.println("\t bits: " + BitOperator.showBits(BitOperator.writeBit(49, 3, 1).intValue()));
 		System.exit(-1);
 		/*
 		for(short i=0; i<vAry.length; i++) {

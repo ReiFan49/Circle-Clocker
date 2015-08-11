@@ -1,19 +1,18 @@
 package com.rfhkr.cc.gameplay.result;
 
-import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.errors.*;
 import com.rfhkr.cc.gameplay.*;
-import static com.rfhkr.cc.gameplay.Judgement.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.util.*;
-import sun.print.*;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.stream.*;
+
+import static com.rfhkr.cc.CCMain.*;
+import static com.rfhkr.cc.gameplay.Judgement.*;
 
 /**
  * @author Rei_Fan49
@@ -87,7 +86,6 @@ public final class Highscore {
 				while (true) {
 					GameplayResult g = fm.load();
 					g.setChart(song);
-					System.out.println(g.getChartset());
 					scores.get(song).add(g);
 				}
 			} catch (NullPointerException e) {

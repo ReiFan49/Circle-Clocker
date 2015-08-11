@@ -37,7 +37,7 @@ public class CCMain extends Game {
 		size  = Twin.set(1,1);
 		Gdx.input.setInputProcessor(inputHandler);
 		font.addDirectory("core\\assets");
-		font.setIndex(2);
+		font.setIndex(1);
 		this.setScreen(AbstractScreen.request(ScreenMainMenu.class));
 	}
 	public void dispose() {

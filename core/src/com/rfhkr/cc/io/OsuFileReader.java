@@ -6,13 +6,9 @@ import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.cc.level.convert.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
-import sun.security.mscapi.*;
-import sun.security.provider.*;
 
 import java.io.*;
 import java.nio.file.*;
-import java.security.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -34,7 +30,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
-	public OsuFileReader parse(@NotNull File file) {
+	public OsuFileReader parse(/* @NotNull */ File file) {
 		try (BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file),"utf-8"))) {
 			String str; Object obj = null;
 			RAWOsuBeatmap bm = new RAWOsuBeatmap();
@@ -262,7 +258,7 @@ public class OsuFileReader implements FileFormatReader<OsuFileReader> {
 		PathResolver  nova = PathResolver.at("Hiro - VERTeX (Rei Hakurei) [Sample 08].osu")
 			.build("resources","Charts","Hiro (maimai) - VERTeX");
 		/** use arpg style to retain any files that next to the designated <nova> file */
-		@NotNull
+		/* @NotNull */
 		Path          arpg = (new File(nova.resolve())).toPath().getParent().toAbsolutePath();
 		pars.parse(nova);
 		Chartset.cache.forEach(System.out::println);

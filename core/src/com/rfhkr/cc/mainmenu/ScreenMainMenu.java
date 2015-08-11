@@ -1,6 +1,5 @@
 package com.rfhkr.cc.mainmenu;
 
-import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -14,6 +13,8 @@ import com.rfhkr.util.*;
 
 import java.util.*;
 import java.util.stream.*;
+
+import static com.rfhkr.cc.CCMain.*;
 
 /**
  * @author Rei_Fan49
@@ -119,6 +120,13 @@ public class ScreenMainMenu extends AbstractScreen {
 				"Press Left/Right to switch song\r\n\r\n" +
 				String.format("Press A toggle %s AUTOPLAY mode%n",Gameplay.autoplay ? "remove" : "set") +
 				String.format("Press H toggle %s generated highscore%n",Highscore.REC_NG ? "hide" : "show") +
+				String.format("Press I,O toggle orientation (%2s,%s)%n",Integer.toBinaryString(Gameplay.orientation),
+					Arrays.stream(Array.with(
+						Gameplay.orientation == 0 ? "NM" : "",
+						BitOperator.readBit(Gameplay.orientation,0) == 1 ? "MR" : "",
+						BitOperator.readBit(Gameplay.orientation,1) == 2 ? "FL" : ""
+					).toArray()).filter(x->x.length()>0).collect(Collectors.joining(","))
+				) +
 				String.format("Press R to refresh current data%n") +
 				String.format("Press T toggle %s ASSIST TICK%n",Gameplay.assistTick ? "remove" : "set") +
 				String.format("Press U toggle %s UNICODE%n",Metadata.unicode ? "remove" : "set") +

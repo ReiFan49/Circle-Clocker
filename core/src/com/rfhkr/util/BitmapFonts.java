@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.*;
 import com.badlogic.gdx.tools.*;
 import com.rfhkr.cc.errors.*;
-import com.sun.istack.internal.*;
 
 import java.util.*;
 
@@ -127,7 +126,7 @@ public class BitmapFonts {
 	}
 	// Constructors
 	public BitmapFonts() { this(getDefaultFont()); }
-	public BitmapFonts(@NotNull BitmapFont... bmpFonts) {
+	public BitmapFonts(/* @NotNull */ BitmapFont... bmpFonts) {
 		this.bmpFonts = new ArrayList<>();
 		this.bmpFonts.addAll(Arrays.asList(bmpFonts));
 	}

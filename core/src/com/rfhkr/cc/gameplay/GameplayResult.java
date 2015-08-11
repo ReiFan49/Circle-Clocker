@@ -2,9 +2,6 @@ package com.rfhkr.cc.gameplay;
 
 import com.badlogic.gdx.math.*;
 import com.rfhkr.cc.level.*;
-import com.sun.istack.internal.*;
-import static com.rfhkr.cc.level.Chart.NoteType;
-import static com.rfhkr.cc.gameplay.Judgement.*;
 
 import java.io.*;
 import java.time.*;
@@ -13,6 +10,9 @@ import java.util.*;
 import java.util.concurrent.atomic.*;
 import java.util.function.*;
 import java.util.stream.*;
+
+import static com.rfhkr.cc.gameplay.Judgement.*;
+import static com.rfhkr.cc.level.Chart.*;
 
 /**
  * @author Rei_Fan49
@@ -63,9 +63,9 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 	private float    GS;
 	private String   playerName;
 	private Instant  playedTime;
-	@NotNull
+	/* @NotNull */
 	private transient Chartset playedSet;
-	@NotNull
+	/* @NotNull */
 	private transient Chart playedChart;
 	private EnumMap<NoteType ,Integer> score;
 	private EnumMap<NoteType ,Integer> just ;
@@ -112,7 +112,7 @@ public final class GameplayResult implements Comparable<GameplayResult>, Seriali
 		return REC;
 	}
 	// ** INTERACTIONS
-	public int      compareTo(@NotNull GameplayResult other) {
+	public int      compareTo(/* @NotNull */ GameplayResult other) {
 		return compare(this,other);
 	}
 	// ** METHODS

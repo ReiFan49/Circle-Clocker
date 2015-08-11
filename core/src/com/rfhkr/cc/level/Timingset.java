@@ -2,7 +2,6 @@ package com.rfhkr.cc.level;
 
 import com.rfhkr.cc.errors.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -58,7 +57,7 @@ public final class Timingset implements Serializable {
 	public boolean   equals(Object ts) {
 		return (ts!=null) && (ts instanceof Timingset) && equals((Timingset)ts);
 	}
-	public boolean   equals(@NotNull Timingset other) {
+	public boolean   equals(/* @NotNull */ Timingset other) {
 		return tp.equals(other.tp) && offsets.equals(other.offsets);
 	}
 	// ** INTERACTIONS
@@ -124,11 +123,11 @@ public final class Timingset implements Serializable {
 	public Timingset() {
 	}
 	@SafeVarargs
-	public Timingset(double firstOffset, double firstBPM,@Nullable Pair<Timing,BPMData>... addition) {
+	public Timingset(double firstOffset, double firstBPM,/* @Nullable */ Pair<Timing,BPMData>... addition) {
 		this((float)firstOffset,BPMData.on(firstBPM,4),addition);
 	}
 	@SafeVarargs
-	public Timingset(double firstOffset, BPMData firstBPM,@Nullable Pair<Timing,BPMData>... addition) {
+	public Timingset(double firstOffset, BPMData firstBPM,/* @Nullable */ Pair<Timing,BPMData>... addition) {
 		addTiming(firstBPM).setFirstOffset((float)firstOffset);
 		if(Objects.nonNull(addition) && addition.length > 0)
 			Arrays.stream(addition).peek((x)->addTiming(x.get1st(),x.get2nd()));

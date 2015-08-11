@@ -1,17 +1,17 @@
 package com.rfhkr.cc.gameplay.result;
 
-import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
 import com.rfhkr.cc.gameplay.*;
-import com.sun.istack.internal.*;
 
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
+
+import static com.rfhkr.cc.CCMain.*;
 
 /**
  * @author Rei_Fan49
@@ -25,9 +25,9 @@ public class ResultScreen extends AbstractScreen {
 	// ** PREDICATES
 	// ** INTERACTIONS
 	// ** METHODS
-	@NotNull
+	/* @NotNull */
 	public static ResultScreen show(
-		@NotNull GameplayResult gRes
+		/* @NotNull */ GameplayResult gRes
 	) {
 		System.out.println(gRes);
 		ResultScreen sRef = null;

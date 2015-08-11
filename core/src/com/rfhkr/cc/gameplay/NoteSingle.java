@@ -1,11 +1,11 @@
 package com.rfhkr.cc.gameplay;
 
 import com.badlogic.gdx.graphics.g2d.*;
-import com.sun.istack.internal.*;
-import com.rfhkr.cc.level.Chart.NoteType;
-import static com.rfhkr.cc.level.Chart.NoteType.*;
+import com.rfhkr.cc.level.Chart.*;
 
 import java.util.function.*;
+
+import static com.rfhkr.cc.level.Chart.NoteType.*;
 
 /**
  * @author Rei_Fan49
@@ -73,7 +73,7 @@ class NoteSingle extends NoteBasic implements LateJudgable {
 	// -- Simple Constructor (no Amplifier)
 	public NoteSingle(int slot,float s) { this(slot,s,1); }
 	// -- Grand Constructor (with Amplifier)
-	public NoteSingle(int slot,float s,@NotNull int n) {
+	public NoteSingle(int slot,float s,/* @NotNull */ int n) {
 		super(slot,s,s,n);
 	}
 	// Driver

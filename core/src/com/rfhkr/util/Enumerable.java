@@ -1,6 +1,6 @@
 package com.rfhkr.util;
+
 import java.util.*;
-import java.lang.*;
 
 /**
   @author    Rei Hakurei

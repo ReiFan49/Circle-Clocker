@@ -1,7 +1,6 @@
 package com.rfhkr.util;
 
 import com.rfhkr.cc.errors.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -105,12 +104,13 @@ public final class FileMarshal {
 		} catch (Exception e) { e.printStackTrace(); }
 		return this;
 	}
-	public FileMarshal dump(@NotNull Object... objs) {
+	public FileMarshal dump(/* @NotNull */ Object... objs) {
 		Arrays.stream(objs).forEach(obj->
 			dump(obj.getClass().cast(obj))
 		);
 		return this;
 	}
+	@SuppressWarnings("unchecked")
 	public <T> T load() {
 		try {
 			if (fileMode != FileMode.FILE_LOAD)

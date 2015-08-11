@@ -1,7 +1,6 @@
 package com.rfhkr.cc.gameplay;
 
 import com.rfhkr.cc.*;
-import com.rfhkr.cc.gameplay.result.*;
 
 import static com.rfhkr.cc.gameplay.CursorHandler.Mode.*;
 
@@ -30,6 +29,7 @@ public class AdapterInputGameplay extends AbstractInputAdapter {
 	private AdapterInputGameplay() {
 		funcTouchDown = (x,y,p,b)-> {
 			CursorHandler.type(CursorHandler.type()==SPREAD ? CROSSED : SPREAD);
+			TraceLine.click();
 			return true;
 		};
 	}

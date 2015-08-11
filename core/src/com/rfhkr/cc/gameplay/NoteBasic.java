@@ -6,9 +6,8 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.cc.*;
-import com.rfhkr.cc.level.Chart.NoteType;
+import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.util.*;
 import java.util.function.*;
@@ -221,7 +220,7 @@ abstract class NoteBasic extends AbstractInteract<Circle> implements Judgable {
 	// -- Grand Constructor (with Amplifier)
 	public NoteBasic(int slot,Twin<Float> time,int n) { this(slot,time.get1st(),time.get2nd(),n); }
 	public NoteBasic(int slot,float s,int n) { this(slot,s,s,n); }
-	public NoteBasic(int slot,float s,float e,@NotNull int n) {
+	public NoteBasic(int slot,float s,float e,/* @NotNull */ int n) {
 		super(gRef,null,null); // i'm really sorry for doing this, i hate super above :>
 		this.slot = (byte)Math.max(1,Math.min(16,slot));
 		this.pos = new Vector2(Gameplay.getCenterScreen());

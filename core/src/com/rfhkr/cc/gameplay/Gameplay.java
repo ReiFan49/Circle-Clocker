@@ -1,10 +1,8 @@
 package com.rfhkr.cc.gameplay;
 
-import static com.rfhkr.cc.CCMain.ENDL;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
@@ -16,7 +14,6 @@ import com.rfhkr.cc.io.*;
 import com.rfhkr.cc.level.*;
 import com.rfhkr.cc.level.Chart.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -24,6 +21,8 @@ import java.time.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
+
+import static com.rfhkr.cc.CCMain.*;
 
 /**
  * @author Rei_Fan49
@@ -37,6 +36,7 @@ public class Gameplay extends AbstractScreen {
 	public static final Byte[] posBuff = {-1,-1,-1,-1};
 	public static final Setup setup = new Setup();
 	public static final Map<Integer,Array<Vector2>> posMap = new TreeMap<>();
+	public static byte  orientation = 0;
 	private static boolean  firstRun = true;
 	private static long     calibratedBGM;
 	private static long     calibrateBack;
@@ -82,14 +82,15 @@ public class Gameplay extends AbstractScreen {
 				center = new Vector2(getCenterScreen());
 			double angle;
 			int keyIndex = 0;
-			while(keyIndex < mode)
+			while(keyIndex < mode) {
 				mapping.add(
 					(new Vector2(center))
 						.add(
-							(float)( radius * Math.cos(angle = Math.toRadians(angleCue - angleIncr * keyIndex++))),
-							(float)(-radius * Math.sin(angle))
+							(float) (radius * Math.cos(angle = Math.toRadians(angleCue - angleIncr * keyIndex++))),
+							(float) (-radius * Math.sin(angle))
 						)
 				);
+			}
 			posMap.put(mode,mapping);
 		}
 		return posMap.get(mode);
@@ -131,6 +132,7 @@ public class Gameplay extends AbstractScreen {
 	private boolean[][]
 		buffState; // affects touchRls and touchHit
 	private Array<Judgement> lastJudge;
+	private AnimationHandler animJudge, animJust;
 	private float    lastNoteTime;
 	private Sound    noteTick;
 	private int      combo;
@@ -226,7 +228,7 @@ public class Gameplay extends AbstractScreen {
 			// calibrate from front
 			missRate = calibratedBGM - (System.nanoTime() - Math.round((double)bgm.getPosition() * 1_000_000_000L));
 			if(Math.abs(missRate) > 5_000_000L) {
-				Gdx.app.log("TimerShift",String.format("BGM Miss %4dms",missRate / 1000000));
+				//Gdx.app.log("TimerShift",String.format("BGM Miss %4dms",missRate / 1000000));
 				calibratedBGM -= missRate;
 				timer.delay(missRate / 1_000_000);
 			}
@@ -235,7 +237,7 @@ public class Gameplay extends AbstractScreen {
 			calibrateBack = calibratedBGM + Math.round(lastNoteTime * 1_000_000_000D);
 			missRate = (calibrateBack/1_000_000 - FinishHandle.self.getExecuteTimeMillis());
 			if(Math.abs(missRate) > 5L) {
-				Gdx.app.log("TimerShift",String.format("CRD Miss %4dms",missRate));
+				//Gdx.app.log("TimerShift",String.format("CRD Miss %4dms",missRate));
 				timer.delay(missRate);
 			}
 		} else {
@@ -276,28 +278,7 @@ public class Gameplay extends AbstractScreen {
 				Color drawColor = batch.getColor();
 				drawColor.set(1.0f,1.0f,1.0f,1.0f);
 				drawColor.a = (1.0f - (timeElapsed > touchTest.get(i) ? 0.0f : 0.5f))/5f;
-				switch(lastJudge.get(i)) {
-					case JUST:
-						drawColor.r *= 1.0;
-						drawColor.g *= 0.3;
-						drawColor.b *= 0.1;
-						break;
-					case EXCEL:
-						drawColor.r *= 0.8;
-						drawColor.g *= 0.5;
-						drawColor.b *= 0.2;
-						break;
-					case HIT:
-						drawColor.r *= 0.4;
-						drawColor.g *= 0.8;
-						drawColor.b *= 0.4;
-						break;
-					case BAD:
-						drawColor.r *= 0.3;
-						drawColor.g *= 0.3;
-						drawColor.b *= 0.6;
-						break;
-				}
+				drawColor.mul(JudgementColor.get(lastJudge.get(i)));
 				if (hovered)
 					drawColor.mul(1.0f,0.6f,1.0f,5.0f);
 				batch.setColor(drawColor);
@@ -308,6 +289,8 @@ public class Gameplay extends AbstractScreen {
 					-1,1,
 					i * 360f / selectedSet.getDifficulties(chartIndex).getMode() + 90,true
 				);
+				animJudge.draw(12);
+				animJust.draw(36);
 				batch.setColor(1.0f,1.0f,1.0f,1.0f);
 			}
 		gRef.font.getCurrent().draw(batch,
@@ -329,20 +312,20 @@ public class Gameplay extends AbstractScreen {
 				getMouseFieldPos(),lastRecordedInput.x,lastRecordedInput.y,
 				getInputAngle()
 			),
-			400,48,368, 0, false
+			480,16,320, 0, false
 		);
 		if(autoplay)
 			gRef.font.getCurrent().draw(batch,
 				String.format("AUTOPLAY <Moves: %04d unit(s)>",
 					AutoInputHandle.moveCount
 				),
-				400,104,368, 0, false
+				480,72,320, 0, false
 			);
 		gRef.font.getCurrent().draw(batch,
-			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAchievement %1.2f%% (Rank %s)%nCombo %d(%d)%n%nJudgement%n%s",
+			String.format("Score %09d%n%s%n%nPass Score %09d%nSS Score %09d%nAcc: %1.2f%% (Rank %s)%nCombo %d(%d)%n%nJudgement%n%s",
 				gameResult.getTotalScore(),
 				gameResult.getScoreRef().entrySet().stream().map(x ->
-						String.format("%s: %4dpts",x.getKey(),x.getValue())
+					String.format("%s: %4dpts",x.getKey(),x.getValue())
 				).collect(Collectors.joining(ENDL)),
 				Math.round(gameResult.getMaximumScore() * GameplayResult.Rank.BM.accReq / 100),
 				gameResult.getMaximumScore(),
@@ -351,10 +334,10 @@ public class Gameplay extends AbstractScreen {
 				combo,
 				gameResult.getMaximumCombo(),
 				gameResult.getJudgeRef().entrySet().stream().map(x ->
-						String.format("%s x%4d",x.getKey(),x.getValue())
+					String.format("%s x%4d",x.getKey(),x.getValue())
 				).collect(Collectors.joining(ENDL))
 			),
-			400,128,368,0,false
+			480,96,320,0,false
 		);
 		gRef.font.getCurrent().setColor(1.0f,1.0f,1.0f,1.0f);
 		gRef.font.getCurrent().draw(batch,
@@ -378,6 +361,7 @@ public class Gameplay extends AbstractScreen {
 		//gRef.font.getDefault().draw(batch, "Circle Clocker", 100, 64, 600, 1, false);
 		for(AbstractInteract o : obj)
 			o.draw(batch);
+		TraceLine.draw(batch);
 
 		batch.end();
 	}
@@ -391,15 +375,19 @@ public class Gameplay extends AbstractScreen {
 		gameResult.addCounter(res);
 		gameResult.setMaxCombo(Math.max(gameResult.getMaximumCombo(),combo));
 	}
-	void onJudgeGiven(@NotNull NoteBasic note,boolean[] justFlag){
+	void onJudgeGiven(/* @NotNull */ NoteBasic note,boolean[] justFlag){
 		Judgement j = autoplay?Judgement.EXCEL:note.getWorstJudgement();
 		applyJudge(note.getNotePos()-1,j,justFlag[0]||justFlag[1]);
 		gameResult.addCounter(note.getType(),Math.round(j.baseScore * note.getType().scoreMult));
 		obj.removeValue(note,false);
+		animJudge.animTime.set(note.getNotePos() - 1,timeElapsed);
+		animJudge.animText.set(note.getNotePos() - 1,JudgementColor.glyphs.get(j));
 		note.hasJudged();
 	}
-	void onJustTiming(@NotNull NoteBasic note) {
-		applyJudge(note.getNotePos()-1,Judgement.JUST,true);
+	void onJustTiming(/* @NotNull */ NoteBasic note) {
+		animJust.animTime.set(note.getNotePos() - 1,timeElapsed);
+		animJust.animText.set(note.getNotePos() - 1,JudgementColor.glyphs.get(Judgement.JUST));
+		applyJudge(note.getNotePos() - 1,Judgement.JUST,true);
 		gameResult.addJBonus(note.getType());
 	}
 	private void determineBestRoute(final Supplier<Float> calibrator) {
@@ -418,6 +406,7 @@ public class Gameplay extends AbstractScreen {
 		chartRef.chart.add(lastNote);
 		for(Note note : chartRef.chart) {
 			// Let previous time initialized and not match with current time to process the next sequence
+			int   p = Keymap.op(note.getPos()-1);
 			float timenow = currentTimings.at(note.getStart());
 			if (timeprev != timenow) {
 				// refresh state
@@ -430,8 +419,8 @@ public class Gameplay extends AbstractScreen {
 				for(int i=0;i<statenow.length;i++)
 					statenow[i] &= statetime[i] > timenow;
 			}
-			statenext[(byte)(note.getPos()-1)] = true;
-			statetime[(byte)(note.getPos()-1)] = currentTimings.at(note.getEnd());
+			statenext[(byte)(p)] = true;
+			statetime[(byte)(p)] = currentTimings.at(note.getEnd());
 		}
 		CursorHandler.ChartSolver.send(timeprev,Arrays.copyOf(statenext,statenext.length));
 		chartRef.chart.removeValue(lastNote,true);
@@ -497,7 +486,7 @@ public class Gameplay extends AbstractScreen {
 		private int id;
 		private float end;
 		public void run() {
-			now().touchTest.set(id,now().timeElapsed + ((end<=0.0f) ? 0.0f : end) + 0.1f);
+			now().touchTest.set(Keymap.op(id),now().timeElapsed + ((end<=0.0f) ? 0.0f : end) + 0.1f);
 			//now().applyJudge(id,Judgement.values()[(int)Math.floor(Math.random() * Judgement.values().length)]);
 			//System.out.println(now().touchTest);
 		}
@@ -515,15 +504,15 @@ public class Gameplay extends AbstractScreen {
 			if(Objects.nonNull(item))
 				Gameplay.now().obj.add(item);
 		}
-		public NoteCreation(@NotNull Note noteData) {
+		public NoteCreation(/* @NotNull */ Note noteData) {
 			switch(noteData.getType()) {
 				case NOTE_NORM:
-					item = new NoteSingle(noteData.getPos(),
+					item = new NoteSingle(Keymap.op(noteData.getPos()-1)+1,
 						now().currentTimings.at(noteData.getStart())
 					);
 					break;
 				case NOTE_LONG:
-					item = new NoteLong(noteData.getPos(),
+					item = new NoteLong(Keymap.op(noteData.getPos()-1)+1,
 						now().currentTimings.at(noteData.getStart()),
 						now().currentTimings.at(noteData.getEnd())
 					);
@@ -544,6 +533,9 @@ public class Gameplay extends AbstractScreen {
 				x = (int)posMap.get(Gameplay.now().getMode()).get(cmd.get2nd()-1).x,
 				y = (int)posMap.get(Gameplay.now().getMode()).get(cmd.get2nd()-1).y;
 			Gdx.input.setCursorPosition(x,y);
+			TraceLine.set(cmd.get2nd());
+			if(cmd.get1st() != lastCommand.get1st())
+				TraceLine.click();
 			CursorHandler.type(cmd.get1st());
 			if(cmd.get1st() == CursorHandler.Mode.SINGLE)
 				return;
@@ -568,17 +560,60 @@ public class Gameplay extends AbstractScreen {
 			Highscore.get().saveScores(now().gameResult.getChart());
 		}
 	}
+	private static final class JudgementColor {
+		private static EnumMap<Judgement,Color>       colors = new EnumMap<>(Judgement.class);
+		private static EnumMap<Judgement,GlyphLayout> glyphs = new EnumMap<>(Judgement.class);
+		static {
+			colors.put(Judgement.JUST ,new Color(1.0f,0.3f,0.1f,1.0f));
+			colors.put(Judgement.EXCEL,new Color(0.8f,0.5f,0.2f,1.0f));
+			colors.put(Judgement.HIT  ,new Color(0.4f,0.8f,0.4f,1.0f));
+			colors.put(Judgement.BAD  ,new Color(0.3f,0.3f,0.6f,1.0f));
+			colors.put(Judgement.MISS ,new Color(0.8f,0.7f,0.8f,1.0f));
+			Stream.of(Judgement.values()).forEach(j ->
+				glyphs.put(j,new GlyphLayout(self.gRef.font.getCurrent(),j.name(),colors.get(j),96,Align.center,false))
+			);
+		}
+		public static Color get(Judgement j) {
+			return colors.get(j);
+		}
+	}
+	private static final class AnimationHandler {
+		private static final float animLength = 0.25f;
+		private FloatArray         animTime;
+		private Array<GlyphLayout> animText;
+		public void draw(int d) {
+			for(int i=0;i<animText.size;i++) {
+				if(self.timeElapsed >= animTime.get(i) && self.timeElapsed < animTime.get(i)+animLength) {
+					Vector2 cuePos = posMap.get(self.getChart().getMode()).get(i);
+					double
+						percnt = (self.timeElapsed - animTime.get(i))/animLength,
+						sinpow = Math.pow(Math.sin(Math.toRadians(percnt*180)),0.75),
+						angle  = Math.atan2(cuePos.y - 300,cuePos.x - 400);
+					float
+						x = cuePos.x - (float)Math.cos(angle)*d - 48,
+					  y = cuePos.y - (float)Math.sin(angle)*d;
+					animText.get(i).runs.forEach(t->t.color.a = (float)sinpow);
+					self.gRef.font.getCurrent().draw(self.gRef.batch,animText.get(i),x,y);
+				}
+			}
+		}
+		public AnimationHandler(int s) {
+			animTime = new FloatArray(false,s);
+			animText = new Array<>(false,s);
+		}
+	}
 	// Constructors
 	public Gameplay(Chart selectedChart) {
 		super(AdapterInputGameplay.class);
 		now(this);
 		AutoInputHandle.moveCount = 0;
+		TraceLine.init();
 		FileFormatReader<?> pars;
 		PathResolver        nova;
 		Path                arpg;
 		selectedSet = Chartset.find(selectedChart);
 		chartIndex  = (byte)selectedSet.getDifficulties().indexOf(selectedChart,true);
-		assignPosition(selectedSet.getDifficulties(chartIndex).getMode());
+		assignPosition(selectedChart.getMode());
 		currentTimings = selectedSet.getMetadata().getTimingSet();
 		combo = 0;
 		timeElapsed = 0;
@@ -599,6 +634,8 @@ public class Gameplay extends AbstractScreen {
 			hitZone = new Array<>(false,j);
 			touchRls = new Array<>(touchHit = new Array<>(touchTest = new Array<>(false,j)));
 			lastJudge = new Array<>(false,j);
+			animJudge = new AnimationHandler(j);
+			animJust  = new AnimationHandler(j);
 			buffState = new boolean[2][getMode()];
 			while(i++ < j) {
 				hitZone.add(
@@ -610,6 +647,9 @@ public class Gameplay extends AbstractScreen {
 				touchHit .add(-0.001f);
 				touchRls .add(-0.001f);
 				lastJudge.add(Judgement.MISS);
+				Stream.of(animJudge,animJust)
+					.peek   (x->x.animTime.add(Float.NEGATIVE_INFINITY))
+					.forEach(x->x.animText.add(JudgementColor.glyphs.get(Judgement.MISS)));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -618,6 +658,7 @@ public class Gameplay extends AbstractScreen {
 		}
 		bgm = Gdx.audio.newMusic(Gdx.files.internal(arpg + "\\" + selectedSet.getSongName()));
 		bgm.setVolume(0.2f);
+		TraceLine.clear();
 		noteTick = Gdx.audio.newSound(Gdx.files.internal(PathResolver.at("tick.ogg").build("core","assets").toString()));
 //		timer.scheduleTask(AssistTick.self,
 //			currentTimings.getFirstOffset(),

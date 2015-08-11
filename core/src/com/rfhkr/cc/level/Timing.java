@@ -1,7 +1,6 @@
 package com.rfhkr.cc.level;
 
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -60,7 +59,7 @@ public class Timing implements Comparable<Timing>, Serializable{
 			divisor = 1;
 		}
 		// Perform Basic Check
-		Pair tp = Pair.gen(beat, Twin.set(dividend, divisor));
+		Pair<Short,Twin<Byte>> tp = Pair.gen(beat, Twin.set(dividend, divisor));
 		// Check timing cache
 		Timing t;
 		if(cache.containsKey(tp)) {
@@ -144,7 +143,7 @@ public class Timing implements Comparable<Timing>, Serializable{
 	private Twin<Integer> getRational() { return Twin.set(b*dd+dv,0+dd); }
 	// ** PREDICATES
 	// ** INTERACTIONS
-	public int    compareTo(@Nullable Timing other) {
+	public int    compareTo(/* @Nullable */ Timing other) {
 		return Objects.nonNull(other) ? Double.compare(this.toDouble(BPMData.on()),other.toDouble(BPMData.on())) : 1;
 	}
 	public boolean equals(Object other) {
@@ -200,7 +199,7 @@ public class Timing implements Comparable<Timing>, Serializable{
 		public static final Twin<Integer> fractionSub(int n1, int d1, int n2, int d2) {
 			return fractionAdd(n1, d1, -n2, d2);
 		}
-		public static final Twin<Integer> fractionSub(Twin<Integer> init,@NotNull Twin<Integer>... fracs) {
+		public static final Twin<Integer> fractionSub(Twin<Integer> init,/* @NotNull */ Twin<Integer>... fracs) {
 			return Arrays.stream(fracs).reduce(init.swapPair(true).swapPair(),
 				(pre,cur)->fractionSub(pre.getX(),pre.getY(),cur.getX(),cur.getY())
 			);

@@ -1,7 +1,5 @@
 package com.rfhkr.cc.io;
 
-import com.rfhkr.util.*;
-
 import java.io.*;
 
 /**

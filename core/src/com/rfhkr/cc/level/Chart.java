@@ -2,7 +2,6 @@ package com.rfhkr.cc.level;
 
 import com.badlogic.gdx.utils.*;
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -73,12 +72,12 @@ public final class Chart implements Comparable<Chart>, Serializable {
 	}
 	public boolean switchMode() { return (this.diff16Hit=!this.diff16Hit); }
 	public Chart setLevel(long lv) { this.diffLevel=(byte)lv; return this; }
-	public Chart setCharter(@Nullable String user) { this.diffCharter=user; return this; }
+	public Chart setCharter(/* @Nullable */ String user) { this.diffCharter=user; return this; }
 	public Chart setDiffType(DiffType d) { this.diffName.setFirst(d); return this; }
-	public Chart setDiffName(@Nullable String name) { this.diffName.setSecond(name); return this; }
+	public Chart setDiffName(/* @Nullable */ String name) { this.diffName.setSecond(name); return this; }
 	// ** PREDICATES
 	// ** INTERACTIONS
-	public int compareTo(@Nullable Chart other) { return compare(this,other); }
+	public int compareTo(/* @Nullable */ Chart other) { return compare(this,other); }
 	// ** METHODS
 	protected void finalize() throws Throwable {
 		super.finalize();
@@ -102,7 +101,7 @@ public final class Chart implements Comparable<Chart>, Serializable {
 		public static DiffType determine(String s) {
 			try { return valueOf(s); } catch (IllegalArgumentException e) { return CUSTOM; }
 		}
-		DiffType (@Nullable char... abbr) {
+		DiffType (/* @Nullable */ char... abbr) {
 			this.abbr = abbr;
 		}
 	}

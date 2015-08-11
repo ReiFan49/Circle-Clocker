@@ -1,7 +1,6 @@
 package com.rfhkr.cc.level;
 
 import com.rfhkr.util.*;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
@@ -91,27 +90,27 @@ public final class Metadata implements Serializable {
 		return timingPoints.getTimingTable();
 	}
 	private Metadata setPairElement(Pair<String,String> p,String e1) { p.set1st(e1); return this;	}
-	private Metadata setPairElement(Pair<String,String> p,@Nullable String e1,@Nullable String e2) {
+	private Metadata setPairElement(Pair<String,String> p,/* @Nullable */ String e1,/* @Nullable */ String e2) {
 		if (Objects.nonNull(e1)) p.set1st(e1); p.set2nd(e2); return this;
 	}
 	public Metadata setTitle(String title) { return setPairElement(songName,title); }
-	public Metadata setTitle(@Nullable String title,@Nullable String unicode) {
+	public Metadata setTitle(/* @Nullable */ String title,/* @Nullable */ String unicode) {
 		return setPairElement(songName,title,unicode);
 	}
 	public Metadata setVocalist(String vocal) { return setPairElement(vocalist,vocal); }
-	public Metadata setVocalist(@Nullable String vocal,@Nullable String unicode) {
+	public Metadata setVocalist(/* @Nullable */ String vocal,/* @Nullable */ String unicode) {
 		return setPairElement(vocalist,vocal,unicode);
 	}
 	public Metadata setComposer(String cmp) { return setPairElement(composer,cmp); }
-	public Metadata setComposer(@Nullable String cmp,@Nullable String unicode) {
+	public Metadata setComposer(/* @Nullable */ String cmp,/* @Nullable */ String unicode) {
 		return setPairElement(composer,cmp,unicode);
 	}
 	public Metadata setGroup(String circle) { return setPairElement(group,circle); }
-	public Metadata setGroup(@Nullable String circle,@Nullable String unicode) {
+	public Metadata setGroup(/* @Nullable */ String circle,/* @Nullable */ String unicode) {
 		return setPairElement(group,circle,unicode);
 	}
 	public Metadata setSeries(String origin) { return setPairElement(series,origin); }
-	public Metadata setSeries(@Nullable String origin,@Nullable String unicode) {
+	public Metadata setSeries(/* @Nullable */ String origin,/* @Nullable */ String unicode) {
 		return setPairElement(series,origin,unicode);
 	}
 	public Metadata setTimingSet(Timingset t) { timingPoints=t; return this; }
@@ -131,7 +130,7 @@ public final class Metadata implements Serializable {
 	public boolean equals(Object other) {
 		return (other != null) && (other instanceof Metadata) && equals((Metadata) other);
 	}
-	public boolean equals(@NotNull Metadata other) {
+	public boolean equals(/* @NotNull */ Metadata other) {
 		return (
 			this.songName.equals(other.songName) &&
 			this.vocalist.equals(other.vocalist) &&

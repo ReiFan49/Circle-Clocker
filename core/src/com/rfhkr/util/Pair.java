@@ -1,9 +1,7 @@
 package com.rfhkr.util;
-import com.sun.istack.internal.*;
 
 import java.io.*;
 import java.util.*;
-import java.lang.*;
 import java.util.function.*;
 
 /** manages tuple of two elements
@@ -105,8 +103,7 @@ public class Pair<T,U> implements Iterable<Object>, Serializable {
 		if(o instanceof Pair) {
 			Pair p = (Pair)o;
 			if(first  !=null ? !first .equals(p.get1st()) : p.get1st()!=null) return false;
-			if(second !=null ? !second.equals(p.get2nd()) : p.get2nd()!=null) return false;
-			return true;
+			return !(second != null ? !second.equals(p.get2nd()) : p.get2nd() != null);
 		}
 		return false;
 	}
@@ -165,7 +162,7 @@ public class Pair<T,U> implements Iterable<Object>, Serializable {
 	 * @return value that matches earlier condition, or null.
 	 */
 	@SuppressWarnings("unchecked")
-	public <R> R getElemCond(R cc,@NotNull BiPredicate<R,T> c1,@Nullable BiPredicate<R,U> c2) {
+	public <R> R getElemCond(R cc,/* @NotNull */ BiPredicate<R,T> c1,/* @Nullable */ BiPredicate<R,U> c2) {
 		return c1.test(cc,first) ?
 			(R)first : ((Objects.isNull(c2)||c2.test(cc,second)) ?
 				(R)second : null);
@@ -179,7 +176,7 @@ public class Pair<T,U> implements Iterable<Object>, Serializable {
 	public Twin<T> toTwin() throws IllegalArgumentException {
 		if (!objClasses[0].equals(objClasses[1]))
 			throw new IllegalArgumentException("Type mismatch for inner-conversion to Twin");
-		return new Twin<>((T)getX(),(T)getY(),(Pair<T,T>)this);
+		return new Twin<>(getX(),(T)getY(),(Pair<T,T>)this);
 	}
 	/** converts the tuple into a string
 	 *  @return string format of the tuple
